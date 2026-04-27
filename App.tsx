@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import Dashboard from './src/webos/components/dashboard/Dashboard';
-import { Routes as AppRoutes } from './src/shared/interfaces/routes.interface';
+import { DashboardRoutes as AppRoutes } from './src/shared/interfaces/routes.interface';
 import { View } from 'react-native';
 import { APP_THEMES } from './src/shared/interfaces/app.interface';
 import { ThemeProvider, useTheme } from './src/shared/context/ThemeContext';

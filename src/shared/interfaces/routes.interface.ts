@@ -1,5 +1,4 @@
-export enum Routes {
-  DASHBOARD = 'Dashboard',
+export enum DashboardRoutes {
   SEARCH = 'Search',
   INBOX = 'Inbox',
   TODAY = 'Today',

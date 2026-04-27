@@ -8,13 +8,15 @@
     "android": "expo run:android",
     "start::ios": "expo run:ios",
     "start::ipad": "expo start --ios",
-    "start::web": "expo start --web",
+    "start::web": "node ./scripts/start-web.js",
+    "start::web-mock": "node ./scripts/start-web.js --mock",
     "prebuild:ios": "expo prebuild --platform ios",
     "mac": "npm run prebuild:ios && echo 'Open the ios workspace and add a Mac target (Mac Catalyst or react-native-macos). See PLATFORM_SETUP.md.'",
     "watch": "npm run prebuild:ios && echo 'Open the ios workspace and add a watchOS companion target. See PLATFORM_SETUP.md.'",
     "clean": "expo start --clear"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
     "expo": "~54.0.33",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
