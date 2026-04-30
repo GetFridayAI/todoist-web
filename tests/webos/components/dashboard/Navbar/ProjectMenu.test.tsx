@@ -38,8 +38,10 @@ describe('ProjectMenu', () => {
 
   it('renders the destructive Delete option last in the options list', () => {
     const { getAllByText } = render(<ProjectMenu {...defaultProps} />);
-    const allOptionTexts = mockOptions.map((o) => o.label);
-    expect(allOptionTexts[allOptionTexts.length - 1]).toBe('Delete');
+    const renderedOptionLabels = getAllByText(/^(Edit|Archive|Delete)$/).map((node) =>
+      Array.isArray(node.props.children) ? node.props.children.join('') : node.props.children
+    );
+    expect(renderedOptionLabels[renderedOptionLabels.length - 1]).toBe('Delete');
   });
 
   it('calls onSelect with the option key when a non-destructive option is pressed', () => {
