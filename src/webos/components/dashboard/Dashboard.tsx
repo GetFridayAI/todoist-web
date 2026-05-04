@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { DashboardRoutes } from '../../../shared/interfaces/routes.interface';
-import { postRequest } from '../../../api/request';
-import { TasksResponse } from '../../../shared/interfaces/tasks.interface';
+import { getRequest, postRequest } from '../../../api/request';
+import { TaskLabel, TaskProject, TasksResponse, TaskUser } from '../../../shared/interfaces/tasks.interface';
 import { useTheme } from '../../../shared/context/ThemeContext';
 import styles from '../../styles/dashboard.styles';
 import NavigationBar from './Navbar/NavigationBar';
-import { COLORS } from '../../../shared/styles/colors.styles';
-import navigationStyles from '../../styles/navigation.styles';
-import { Ionicons } from '@expo/vector-icons';
 import Search from './sections/Search';
 import Inbox from './sections/Inbox';
 import Today from './sections/Today';
@@ -38,27 +35,48 @@ const Dashboard: React.FC<DashboardProps> = ({ activeRoute, routeParams }) => {
   const [tasks, setTasks] = useState<TasksResponse>([]);
   const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(true);
   const [tasksError, setTasksError] = useState<string | null>(null);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [projects, setProjects] = useState<TaskProject[]>([]);
+  const [collaborators, setCollaborators] = useState<TaskUser[]>([]);
+  const [labels, setLabels] = useState<TaskLabel[]>([]);
+  const [isProjectsLoading, setIsProjectsLoading] = useState<boolean>(true);
 
   const resolvedRoute = activeRoute ?? DashboardRoutes.TODAY;
   const ActiveSectionComponent = SECTION_COMPONENT_MAP[resolvedRoute] ?? Today;
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchDashboardData = async () => {
       try {
         setIsLoadingTasks(true);
+        setIsProjectsLoading(true);
         setTasksError(null);
-        const taskResponse = await postRequest<TasksResponse>('/fetch/tasks/all');
-        setTasks(taskResponse);
+
+        const [taskResponse, projectsResponse, collaboratorsResponse, labelsResponse] = await Promise.allSettled([
+          postRequest<TasksResponse>('/fetch/tasks/all'),
+          getRequest<TaskProject[]>('/fetch/projects/all'),
+          postRequest<TaskUser[]>('/retrieveAllCollaborators'),
+          postRequest<TaskLabel[]>('/retrieveAllLabels'),
+        ]);
+
+        if (taskResponse.status === 'fulfilled') {
+          setTasks(taskResponse.value);
+        } else {
+          const errorMessage = taskResponse.reason instanceof Error ? taskResponse.reason.message : 'Unable to fetch tasks.';
+          setTasksError(errorMessage);
+        }
+
+        setProjects(projectsResponse.status === 'fulfilled' ? projectsResponse.value : []);
+        setCollaborators(collaboratorsResponse.status === 'fulfilled' ? collaboratorsResponse.value : []);
+        setLabels(labelsResponse.status === 'fulfilled' ? labelsResponse.value : []);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unable to fetch tasks.';
         setTasksError(errorMessage);
       } finally {
         setIsLoadingTasks(false);
+        setIsProjectsLoading(false);
       }
     };
 
-    void fetchTasks();
+    void fetchDashboardData();
   }, []);
 
   const getStyles = (currentStyles: object[]) => {
@@ -67,30 +85,12 @@ const Dashboard: React.FC<DashboardProps> = ({ activeRoute, routeParams }) => {
 
   return (
     <View style={getStyles([styles.container])}>
-      <NavigationBar isAddMenuOpen={isAddMenuOpen} setIsAddMenuOpen={setIsAddMenuOpen} />
-      {isAddMenuOpen && (
-        <Pressable 
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999,
-          }}
-          onPress={() => setIsAddMenuOpen(false)}
-        />
-      )}
-      {isAddMenuOpen && (
-        <View style={navigationStyles.addMenuDropdown}>
-          <Pressable style={navigationStyles.addMenuItem} onPress={() => setIsAddMenuOpen(false)}>
-            <Text style={navigationStyles.addMenuItemText}>Add Task</Text>
-          </Pressable>
-          <Pressable style={[navigationStyles.addMenuItem, navigationStyles.addMenuItemLast]} onPress={() => setIsAddMenuOpen(false)}>
-            <Text style={navigationStyles.addMenuItemText}>Add Project</Text>
-          </Pressable>
-        </View>
-      )}
+      <NavigationBar
+        projects={projects}
+        collaborators={collaborators}
+        labels={labels}
+        isProjectsLoading={isProjectsLoading}
+      />
       <View style={getStyles([styles.contentContainer])}>
         {isLoadingTasks && (
             <View style={getStyles([styles.loaderContainer])}>

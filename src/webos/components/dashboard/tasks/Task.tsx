@@ -3,7 +3,7 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { PRIORITY } from '../../../../shared/interfaces/tasks.interface';
 import { TaskComponentProps } from '../../../interfaces/tasks/task.interface';
-import styles from '../../../styles/task.styles';
+import styles from '../../../styles/tasks/task.styles';
 import { COLORS } from '../../../../shared/styles/colors.styles';
 import { formatDateToDayMonth } from '../../../utils';
 

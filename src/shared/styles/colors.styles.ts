@@ -1,5 +1,6 @@
 export const COLORS = {
     BLACK: '#1f1f1f',
+    BLACK_BLUE: '#25272d',
     BLACK_PITCH: '#000000',
     WHITE: '#fff',
     OFF_WHITE: '#cccccc',

@@ -1,24 +1,11 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../../shared/styles/colors.styles';
-import { FONT_SIZES, FONT_WEIGHT, SPACING } from '../../../../shared/styles/spacing.styles';
+import { ProjectMenuOption, ProjectMenuProps } from './projectmenu.interface';
+import styles from './projectmenu.styles';
 
-export interface ProjectMenuOption {
-  key: string;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  isDestructive?: boolean;
-}
-
-interface ProjectMenuProps {
-  visible: boolean;
-  top: number;
-  left: number;
-  options: ProjectMenuOption[];
-  onClose: () => void;
-  onSelect: (optionKey: string) => void;
-}
+export type { ProjectMenuOption };
 
 const ProjectMenu: React.FC<ProjectMenuProps> = ({
   visible,
@@ -68,34 +55,5 @@ const ProjectMenu: React.FC<ProjectMenuProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-  },
-  menuContainer: {
-    position: 'absolute',
-    minWidth: 180,
-    backgroundColor: COLORS.GREY_DARK,
-    borderRadius: SPACING.SMALL,
-    borderWidth: 1,
-    borderColor: COLORS.GREY,
-    paddingVertical: SPACING.EXTRA_SMALL,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.SMALL,
-    paddingHorizontal: SPACING.MEDIUM,
-    paddingVertical: SPACING.SMALL,
-  },
-  menuItemHovered: {
-    backgroundColor: COLORS.GREY,
-  },
-  menuItemText: {
-    fontSize: FONT_SIZES.SMALL,
-    fontWeight: FONT_WEIGHT.NORMAL,
-  },
-});
 
 export default ProjectMenu;

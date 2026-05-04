@@ -40,6 +40,14 @@ const APP_THEME = APP_THEMES.DARK;
 
 function ThemedApp() {
   const { styles } = useTheme();
+
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.userSelect = 'none';
+      (document.body.style as any).webkitUserSelect = 'none';
+    }
+  }, []);
+
   return (
     <View style={[appStyles[APP_THEME], { flex: 1 }]}>
       <BrowserRouter>

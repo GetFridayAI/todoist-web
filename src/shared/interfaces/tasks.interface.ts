@@ -38,6 +38,11 @@ export interface TaskReminder {
   time: string;
 }
 
+export interface TaskLabel {
+  labelId: number;
+  labelName: string;
+}
+
 export interface Task {
   taskId: number;
   taskName: string;
@@ -50,6 +55,7 @@ export interface Task {
   labels: string[];
   comments: string[];
   taskType: TASK_TYPE;
+  isRecurring?: boolean;
   reminders: TaskReminder[];
 }
 

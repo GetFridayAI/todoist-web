@@ -7,17 +7,40 @@ import Projects from './Projects';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../../shared/styles/colors.styles';
 import { SPACING } from '../../../../shared/styles/spacing.styles';
+import { TaskLabel, TaskProject, TaskUser } from '../../../../shared/interfaces/tasks.interface';
+import AddTask from '../../tasks/AddTask';
 
 interface NavigationBarProps {
-    isAddMenuOpen: boolean;
-    setIsAddMenuOpen: (open: boolean) => void;
+    projects: TaskProject[];
+    collaborators: TaskUser[];
+    labels: TaskLabel[];
+    isProjectsLoading?: boolean;
 }
 
-const NavigationBar: React.FC<NavigationBarProps> = ({ isAddMenuOpen, setIsAddMenuOpen }) => {
+const NavigationBar: React.FC<NavigationBarProps> = ({
+    projects,
+    collaborators,
+    labels,
+    isProjectsLoading = false,
+}) => {
 	const menuItems = Object.values(MENU_ITEMS);
 	const [activeMenuItem, setActiveMenuItem] = React.useState<MENU_ITEMS>(MENU_ITEMS.Today);
     const [isProfileHovered, setIsProfileHovered] = React.useState(false);
     const [isAddTaskHovered, setIsAddTaskHovered] = React.useState(false);
+    const [isAddMenuOpen, setIsAddMenuOpen] = React.useState(false);
+    const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
+
+    const handleCancelAddTask = () => {
+        setIsAddTaskModalOpen(false);
+    };
+
+    const handleCloseAddTask = () => {
+        setIsAddTaskModalOpen(false);
+    };
+
+    const handleAddTask = (_payload: unknown) => {
+        setIsAddTaskModalOpen(false);
+    };
 
 	return (
 		<View style={styles.container}>
@@ -61,7 +84,41 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAddMenuOpen, setIsAddMe
                     isActive={item === activeMenuItem}
                     updateActiveTab={setActiveMenuItem} />
 			))}
-            <Projects />
+            <Projects projects={projects} isLoading={isProjectsLoading} />
+
+            {isAddMenuOpen && (
+                <Pressable
+                    style={styles.addMenuOverlay}
+                    onPress={() => setIsAddMenuOpen(false)}
+                />
+            )}
+
+            {isAddMenuOpen && (
+                <View style={styles.addMenuDropdown}>
+                    <Pressable
+                        style={styles.addMenuItem}
+                        onPress={() => {
+                            setIsAddMenuOpen(false);
+                            setIsAddTaskModalOpen(true);
+                        }}
+                    >
+                        <Text style={styles.addMenuItemText}>Add Task</Text>
+                    </Pressable>
+                    <Pressable style={[styles.addMenuItem, styles.addMenuItemLast]} onPress={() => setIsAddMenuOpen(false)}>
+                        <Text style={styles.addMenuItemText}>Add Project</Text>
+                    </Pressable>
+                </View>
+            )}
+
+            <AddTask
+                visible={isAddTaskModalOpen}
+                collaborators={collaborators}
+                projects={projects}
+                labels={labels}
+                onClose={handleCloseAddTask}
+                onCancel={handleCancelAddTask}
+                onAdd={handleAddTask}
+            />
 		</View>
 	);
 };

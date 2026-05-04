@@ -1,9 +1,10 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import Dashboard from '../../../../src/webos/components/dashboard/Dashboard';
 import { DashboardRoutes } from '../../../../src/shared/interfaces/routes.interface';
-import { postRequest } from '../../../../src/api/request';
+import { getRequest, postRequest } from '../../../../src/api/request';
 import { mockTasks } from '../../../fixtures/tasks.fixtures';
+import { mockProjects } from '../../../fixtures/projects.fixtures';
 
 jest.mock('../../../../src/api/request');
 
@@ -19,15 +20,9 @@ jest.mock('../../../../src/shared/context/ThemeContext', () => ({
 
 jest.mock('../../../../src/webos/components/dashboard/Navbar/NavigationBar', () => {
   const React = require('react');
-  const { Pressable, Text } = require('react-native');
-  return ({ isAddMenuOpen, setIsAddMenuOpen }: { isAddMenuOpen: boolean; setIsAddMenuOpen: (open: boolean) => void }) =>
-    React.createElement(
-      Pressable,
-      {
-        onPress: () => setIsAddMenuOpen(!isAddMenuOpen),
-      },
-      React.createElement(Text, null, 'NavigationBarMock'),
-    );
+  const { Text } = require('react-native');
+  return ({ projects, collaborators, labels }: { projects: unknown[]; collaborators: unknown[]; labels: unknown[] }) =>
+    React.createElement(Text, null, `NavigationBarMock:${projects.length}:${collaborators.length}:${labels.length}`);
 });
 
 jest.mock('../../../../src/webos/components/dashboard/sections/Search', () => {
@@ -73,15 +68,43 @@ jest.mock('../../../../src/webos/components/dashboard/sections/Projects', () => 
 });
 
 const mockedPostRequest = postRequest as jest.Mock;
+const mockedGetRequest = getRequest as jest.Mock;
 
 describe('Dashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedPostRequest.mockResolvedValue(mockTasks);
+    mockedPostRequest.mockImplementation((route: string) => {
+      if (route === '/fetch/tasks/all') {
+        return Promise.resolve(mockTasks);
+      }
+
+      if (route === '/retrieveAllCollaborators') {
+        return Promise.resolve([
+          { userId: 1, userName: 'John Doe' },
+          { userId: 2, userName: 'Jane Smith' },
+        ]);
+      }
+
+      if (route === '/retrieveAllLabels') {
+        return Promise.resolve([
+          { labelId: 1, labelName: 'frontend' },
+          { labelId: 2, labelName: 'urgent' },
+        ]);
+      }
+
+      return Promise.resolve([]);
+    });
+    mockedGetRequest.mockResolvedValue(mockProjects);
   });
 
   it('shows a loading state message while tasks are being fetched', async () => {
-    mockedPostRequest.mockReturnValue(new Promise(() => {}));
+    mockedPostRequest.mockImplementation((route: string) => {
+      if (route === '/fetch/tasks/all') {
+        return new Promise(() => {});
+      }
+
+      return Promise.resolve([]);
+    });
     const { getByText } = render(<Dashboard activeRoute={DashboardRoutes.TODAY} />);
     await waitFor(() => {
       expect(getByText('Loading tasks...')).toBeTruthy();
@@ -138,31 +161,23 @@ describe('Dashboard', () => {
     });
   });
 
-  it('renders add menu items when mocked navigation bar toggles menu open', async () => {
+  it('renders the navigation bar directly', async () => {
     const { getByText } = render(<Dashboard activeRoute={DashboardRoutes.TODAY} />);
     await waitFor(() => {
       expect(getByText(`TodaySection:${mockTasks.length}`)).toBeTruthy();
     });
 
-    fireEvent.press(getByText('NavigationBarMock'));
-
-    expect(getByText('Add Task')).toBeTruthy();
-    expect(getByText('Add Project')).toBeTruthy();
+    expect(getByText(`NavigationBarMock:${mockProjects.length}:2:2`)).toBeTruthy();
   });
 
-  it('closes add menu when Add Task is pressed', async () => {
-    const { getByText, queryByText } = render(<Dashboard activeRoute={DashboardRoutes.TODAY} />);
+  it('retrieves projects only once and passes them to the navigation bar', async () => {
+    const { getByText } = render(<Dashboard activeRoute={DashboardRoutes.TODAY} />);
 
     await waitFor(() => {
-      expect(getByText(`TodaySection:${mockTasks.length}`)).toBeTruthy();
+      expect(getByText(`NavigationBarMock:${mockProjects.length}:2:2`)).toBeTruthy();
     });
 
-    fireEvent.press(getByText('NavigationBarMock'));
-    expect(getByText('Add Task')).toBeTruthy();
-
-    fireEvent.press(getByText('Add Task'));
-
-    expect(queryByText('Add Task')).toBeNull();
-    expect(queryByText('Add Project')).toBeNull();
+    expect(mockedGetRequest).toHaveBeenCalledTimes(1);
+    expect(mockedGetRequest).toHaveBeenCalledWith('/fetch/projects/all');
   });
 });

@@ -1,31 +1,18 @@
 import React from 'react';
 import { ActivityIndicator, Animated, Easing, GestureResponderEvent, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getRequest } from '../../../../api/request';
-import { TaskProject } from '../../../../shared/interfaces/tasks.interface';
 import { COLORS } from '../../../../shared/styles/colors.styles';
 import styles from '../../../styles/navigation/project.styles';
-import ProjectMenu, { ProjectMenuOption } from './ProjectMenu';
+import ProjectMenu from './ProjectMenu';
+import { PROJECT_MENU_OPTIONS, ProjectsProps, ROOT_PARENT_ID } from './projects.interface';
+import { TaskProject } from '../../../../shared/interfaces/tasks.interface';
 
-const PROJECT_MENU_OPTIONS: ProjectMenuOption[] = [
-    { key: 'favorite', label: 'Add to Favorites', icon: 'star-outline' },
-    { key: 'edit', label: 'Edit', icon: 'create-outline' },
-    { key: 'archive', label: 'Archive', icon: 'archive-outline' },
-    { key: 'move', label: 'Move', icon: 'move-outline' },
-    { key: 'share', label: 'Share', icon: 'share-social-outline' },
-    { key: 'delete', label: 'Delete', icon: 'trash-outline', isDestructive: true },
-];
-
-const ROOT_PARENT_ID = null;
-
-const Projects: React.FC = () => {
-    const [projects, setProjects] = React.useState<TaskProject[]>([]);
+const Projects: React.FC<ProjectsProps> = ({ projects, isLoading = false }) => {
     const [isExpanded, setIsExpanded] = React.useState(true);
     const [isHeaderHovered, setIsHeaderHovered] = React.useState(false);
     const [isToggleHovered, setIsToggleHovered] = React.useState(false);
     const [hoveredProjectId, setHoveredProjectId] = React.useState<number | null>(null);
     const [expandedProjectsMap, setExpandedProjectsMap] = React.useState<Record<number, boolean>>({});
-    const [isLoading, setIsLoading] = React.useState(false);
     const [projectListHeight, setProjectListHeight] = React.useState(0);
     const [activeProjectMenuId, setActiveProjectMenuId] = React.useState<number | null>(null);
     const [projectMenuPosition, setProjectMenuPosition] = React.useState({ top: 0, left: 0 });
@@ -161,21 +148,6 @@ const Projects: React.FC = () => {
             );
         });
     };
-
-    React.useEffect(() => {
-        const fetchProjects = async () => {
-            setIsLoading(true);
-            try {
-                const response = await getRequest<TaskProject[]>('/fetch/projects/all');
-                setProjects(response);
-            } catch (e) {
-                // silently fail
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchProjects();
-    }, []);
 
     React.useEffect(() => {
         const targetMaxHeight = isExpanded ? 4000 : 0;
