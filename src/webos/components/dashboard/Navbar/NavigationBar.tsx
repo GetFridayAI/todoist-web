@@ -84,6 +84,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                     isActive={item === activeMenuItem}
                     updateActiveTab={setActiveMenuItem} />
 			))}
+            
             <Projects projects={projects} isLoading={isProjectsLoading} />
 
             {isAddMenuOpen && (
