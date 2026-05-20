@@ -17,8 +17,10 @@ const styles = StyleSheet.create({
     bottom: -9999,
   },
   dropdown: {
-    backgroundColor: COLORS.BLACK_BLUE,
+    backgroundColor: COLORS.BLACK,
     borderRadius: SPACING.SMALL,
+    borderColor: COLORS.GREY,
+    borderWidth: 1,
     overflow: 'hidden',
     maxHeight: 220,
     zIndex: 201,
@@ -36,10 +38,12 @@ const styles = StyleSheet.create({
     maxHeight: 180,
   },
   option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: SPACING.MEDIUM,
     paddingVertical: SPACING.SMALL,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.GREY,
+    height: SPACING.EXTRA_HUGE,
   },
   optionHovered: {
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -50,7 +54,11 @@ const styles = StyleSheet.create({
   optionText: {
     color: COLORS.WHITE,
     fontSize: FONT_SIZES.SMALL,
+    flex: 1,
   },
+  optionIcon: {
+    marginRight: SPACING.SMALL,
+  }
 });
 
 export default styles;

@@ -30,6 +30,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
+    "@react-native-vector-icons/evil-icons": "^13.1.1",
+    "@react-native-vector-icons/fontawesome-free-solid": "^1.1.1",
+    "@react-native-vector-icons/material-icons": "^13.1.1",
     "expo": "~54.0.33",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
@@ -48,5 +51,8 @@
     "react-test-renderer": "^19.1.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "reactNativeVectorIcons": {
+    "fontDir": "src/rnvi-fonts"
+  }
 }

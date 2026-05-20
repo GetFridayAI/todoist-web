@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BLACK_BLUE,
     borderWidth: 0,
     gap: SPACING.SMALL,
-    minWidth: 300,
+    minWidth: 250,
     padding: SPACING.SMALL,
     borderRadius: SPACING.SMALL,
   },
@@ -36,7 +36,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.SMALL,
     paddingVertical: SPACING.SMALL,
     outlineWidth: 0,
+    outlineStyle: 'none' as any,
     outlineColor: 'rgba(0,0,0,0)',
+    boxShadow: 'none',
   },
   optionList: {
     maxHeight: 220,
@@ -60,13 +62,14 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     fontSize: FONT_SIZES.SMALL,
     flex: 1,
+    fontWeight: FONT_WEIGHT.LIGHT
   },
   icon: {
     marginRight: SPACING.SMALL,
   },
   checkbox: {
-    width: 16,
-    height: 16,
+    width: SPACING.MEDIUM,
+    height: SPACING.MEDIUM,
     borderRadius: 3,
     borderWidth: 1.5,
     borderColor: '#6b7280',
@@ -76,13 +79,14 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   checkboxChecked: {
-    backgroundColor: COLORS.RED_DEEP,
-    borderColor: COLORS.RED_DEEP,
+    backgroundColor: COLORS.OFF_WHITE,
+    borderColor: COLORS.OFF_WHITE,
   },
   checkmark: {
-    color: COLORS.WHITE,
-    fontSize: 10,
-    lineHeight: 14,
+    color: COLORS.BLACK,
+    fontSize: FONT_SIZES.SMALL,
+    lineHeight: SPACING.MEDIUM,
+    fontWeight: FONT_WEIGHT.HEAVY
   },
   createLink: {
     paddingHorizontal: SPACING.SMALL,

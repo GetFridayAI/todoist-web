@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { DropdownOption } from './dropdowninput.interface';
 
 export interface SearchDropdownInputProps {
@@ -11,6 +12,6 @@ export interface SearchDropdownInputProps {
   onRequestCreate?: (text: string) => void;
   placeholderText?: string;
   isMultiSelect?: boolean;
-  iconName?: string;
+  iconName?: keyof typeof Ionicons.glyphMap;
   iconColor?: string;
 }

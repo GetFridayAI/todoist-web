@@ -31,11 +31,14 @@ import {
 import styles from '../../styles/tasks/addtask.styles';
 import {
   buildInitialState,
+  formatDateToDayMonth,
   formatReminderSummary,
   toIsoDate,
 } from '../../utils';
-
 import { postRequest } from '../../../api/request';
+
+const MIN_DESCRIPTION_INPUT_HEIGHT = 24;
+const MAX_DESCRIPTION_INPUT_HEIGHT = 200;
 
 const AddTask: React.FC<AddTaskProps> = ({
   visible,
@@ -69,6 +72,7 @@ const AddTask: React.FC<AddTaskProps> = ({
   const [searchPanelOffset, setSearchPanelOffset] = React.useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [dropdownPanelOffset, setDropdownPanelOffset] = React.useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [datePanelOffset, setDatePanelOffset] = React.useState<{ left: number; top: number }>({ left: 0, top: 0 });
+  const [descriptionInputHeight, setDescriptionInputHeight] = React.useState(MIN_DESCRIPTION_INPUT_HEIGHT);
 
   React.useEffect(() => {
     Animated.parallel([
@@ -161,6 +165,43 @@ const AddTask: React.FC<AddTaskProps> = ({
     return selectedProjectOption?.path ?? formState.project?.projectname ?? 'Todoist';
   }, [formState.project, projectDropdownOptions]);
 
+  const selectedLabelsText: string | null = formState.labels.length > 0
+    ? formState.labels[0] : null;
+
+  const selectedPriorityText: string | null = formState.priority !== null
+    ? (PRIORITY_OPTIONS.find((o) => o.value === formState.priority)?.shortfallName ?? null)
+    : null;
+
+  const selectedDateText: string | null = formState.dates.start
+    ? formatDateToDayMonth(formState.dates.start)
+    : null;
+
+  const selectedDueDateText: string | null = formState.dates.due
+    ? formatDateToDayMonth(formState.dates.due)
+    : null;
+
+  const resolveDateColor = (isoDate: string): string => {
+    const today = toIsoDate(new Date());
+    if (isoDate < today) return COLORS.RED_BLOOD;
+    if (isoDate === today) return COLORS.GREEN;
+    return COLORS.OFF_WHITE;
+  };
+
+  const startDateColor = formState.dates.start ? resolveDateColor(formState.dates.start) : COLORS.OFF_WHITE;
+  const dueDateColor = formState.dates.due ? resolveDateColor(formState.dates.due) : COLORS.OFF_WHITE;
+
+  const selectedAssigneeText: string | null = formState.assignee
+    ? formState.assignee.userName
+    : null;
+
+  const selectedReporterText: string | null = formState.reporter
+    ? formState.reporter.userName
+    : null;
+
+  const selectedTaskTypeText: string | null = formState.taskType !== null
+    ? (TASK_TYPE_OPTIONS.find((o) => o.value === formState.taskType)?.label ?? null)
+    : null;
+
   const resetLocalState = () => {
     setFormState(buildInitialState());
     setActivePanel(null);
@@ -168,6 +209,7 @@ const AddTask: React.FC<AddTaskProps> = ({
     setIsReminderWindowOpen(false);
     setReminderMode('dateTime');
     setReminderDraft({ date: toIsoDate(new Date()), time: '21:00' });
+    setDescriptionInputHeight(MIN_DESCRIPTION_INPUT_HEIGHT);
   };
 
   const handleCancel = () => {
@@ -257,11 +299,26 @@ const AddTask: React.FC<AddTaskProps> = ({
           />
 
           <TextInput
-            style={styles.descriptionInput}
+            multiline
+            style={[styles.descriptionInput, { height: descriptionInputHeight }]}
             value={formState.taskDesc}
-            onChangeText={(taskDesc) => setFormState((prev) => ({ ...prev, taskDesc }))}
+            onChangeText={(taskDesc) => {
+              setFormState((prev) => ({ ...prev, taskDesc }));
+              if (!taskDesc) {
+                setDescriptionInputHeight(MIN_DESCRIPTION_INPUT_HEIGHT);
+              }
+            }}
+            onContentSizeChange={(event) => {
+              const nextHeight = Math.max(
+                MIN_DESCRIPTION_INPUT_HEIGHT,
+                Math.min(event.nativeEvent.contentSize.height, MAX_DESCRIPTION_INPUT_HEIGHT),
+              );
+              setDescriptionInputHeight(nextHeight);
+            }}
             placeholder="Description"
             placeholderTextColor={COLORS.OFF_WHITE}
+            scrollEnabled={descriptionInputHeight >= MAX_DESCRIPTION_INPUT_HEIGHT}
+            textAlignVertical="top"
           />
 
           <View ref={chipsAnchorRef} style={styles.chipsAnchor}>
@@ -275,7 +332,20 @@ const AddTask: React.FC<AddTaskProps> = ({
                 }}
               >
                 <Ionicons name="pricetag-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Labels</Text>
+                <Text style={[styles.chipText, !selectedLabelsText && styles.chipTextPlaceholder]}>
+                  {selectedLabelsText ?? 'Labels'}
+                </Text>
+                {selectedLabelsText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, labels: [] }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
 
               <Pressable
@@ -286,8 +356,21 @@ const AddTask: React.FC<AddTaskProps> = ({
                   openDropdownPanel('priority', priorityChipRef);
                 }}
               >
-                <Ionicons name="flag-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Priority</Text>
+                <Ionicons name="flag-outline" size={14} color={selectedPriorityText ? ((PRIORITY_OPTIONS.find((o) => o.value === formState.priority)?.iconColor)) : COLORS.OFF_WHITE} />
+                <Text style={[styles.chipText, !selectedPriorityText && styles.chipTextPlaceholder]}>
+                  {selectedPriorityText ?? 'Priority'}
+                </Text>
+                {selectedPriorityText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, priority: null }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
 
               <Pressable
@@ -298,8 +381,21 @@ const AddTask: React.FC<AddTaskProps> = ({
                   openDatePanel('startDate', dateChipRef);
                 }}
               >
-                <Ionicons name="calendar-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Date</Text>
+                <Ionicons name="calendar-outline" size={14} color={selectedDateText ? startDateColor : COLORS.OFF_WHITE} />
+                <Text style={[styles.chipText, !selectedDateText && styles.chipTextPlaceholder, selectedDateText ? { color: startDateColor } : null]}>
+                  {selectedDateText ?? 'Date'}
+                </Text>
+                {selectedDateText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, dates: { ...prev.dates, start: '' } }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
 
               <Pressable
@@ -311,7 +407,20 @@ const AddTask: React.FC<AddTaskProps> = ({
                 }}
               >
                 <Ionicons name="person-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Assignee</Text>
+                <Text style={[styles.chipText, !selectedAssigneeText && styles.chipTextPlaceholder]}>
+                  {selectedAssigneeText ?? 'Assignee'}
+                </Text>
+                {selectedAssigneeText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, assignee: null }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
 
               <Pressable
@@ -322,8 +431,21 @@ const AddTask: React.FC<AddTaskProps> = ({
                   openDatePanel('dueDate', deadlineChipRef);
                 }}
               >
-                <Ionicons name="alarm-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Deadline</Text>
+                <Ionicons name="alarm-outline" size={14} color={selectedDueDateText ? dueDateColor : COLORS.OFF_WHITE} />
+                <Text style={[styles.chipText, !selectedDueDateText && styles.chipTextPlaceholder, selectedDueDateText ? { color: dueDateColor } : null]}>
+                  {selectedDueDateText ?? 'Deadline'}
+                </Text>
+                {selectedDueDateText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, dates: { ...prev.dates, due: '' } }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
 
               <Pressable
@@ -335,7 +457,20 @@ const AddTask: React.FC<AddTaskProps> = ({
                 }}
               >
                 <Ionicons name="layers-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Task type</Text>
+                <Text style={[styles.chipText, !selectedTaskTypeText && styles.chipTextPlaceholder]}>
+                  {selectedTaskTypeText ?? 'Task type'}
+                </Text>
+                {selectedTaskTypeText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, taskType: null }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
 
               <Pressable
@@ -347,104 +482,117 @@ const AddTask: React.FC<AddTaskProps> = ({
                 }}
               >
                 <Ionicons name="people-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={styles.chipText}>Reporter</Text>
+                <Text style={[styles.chipText, !selectedReporterText && styles.chipTextPlaceholder]}>
+                  {selectedReporterText ?? 'Reporter'}
+                </Text>
+                {selectedReporterText && (
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setFormState((prev) => ({ ...prev, reporter: null }));
+                      setActivePanel(null);
+                    }}
+                  >
+                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
+                  </Pressable>
+                )}
               </Pressable>
             </ScrollView>
 
-              {(activePanel === 'priority' || activePanel === 'taskType') && (() => {
-                const dropdownPanelConfig = {
-                  priority: {
-                    label: 'Priority',
-                    options: PRIORITY_OPTIONS,
-                    value: formState.priority as string | number,
-                    onChange: (v: string | number) => setFormState((prev) => ({ ...prev, priority: v as PRIORITY })),
-                  },
-                  taskType: {
-                    label: 'Task type',
-                    options: TASK_TYPE_OPTIONS,
-                    value: formState.taskType as string | number,
-                    onChange: (v: string | number) => setFormState((prev) => ({ ...prev, taskType: v as TASK_TYPE })),
-                  },
-                };
-                const config = dropdownPanelConfig[activePanel as 'priority' | 'taskType'];
-                return (
-                  <View style={[styles.panelContainer, { left: dropdownPanelOffset.left, top: dropdownPanelOffset.top, minWidth: 200 }]}>
-                    <DropdownInput
-                      options={config.options}
-                      value={config.value}
-                      onChange={config.onChange}
-                      onRequestClose={() => setActivePanel(null)}
-                    />
-                  </View>
-                );
-              })()}
+            {(activePanel === 'priority' || activePanel === 'taskType') && (() => {
+              const dropdownPanelConfig = {
+                priority: {
+                  label: 'Priority',
+                  options: PRIORITY_OPTIONS,
+                  value: formState.priority as string | number,
+                  onChange: (v: string | number) => setFormState((prev) => ({ ...prev, priority: v as PRIORITY })),
+                },
+                taskType: {
+                  label: 'Task type',
+                  options: TASK_TYPE_OPTIONS,
+                  value: formState.taskType as string | number,
+                  onChange: (v: string | number) => setFormState((prev) => ({ ...prev, taskType: v as TASK_TYPE })),
+                },
+              };
+              const config = dropdownPanelConfig[activePanel as 'priority' | 'taskType'];
+              return (
+                <View style={[styles.panelContainer, { left: dropdownPanelOffset.left, top: dropdownPanelOffset.top, minWidth: 200 }]}>
+                  <DropdownInput
+                    options={config.options}
+                    value={config.value}
+                    onChange={config.onChange}
+                    onRequestClose={() => setActivePanel(null)}
+                  />
+                </View>
+              );
+            })()}
 
-              {(activePanel === 'labels' || activePanel === 'assignee' || activePanel === 'reporter') && (() => {
-                const searchPanelConfig = {
-                  labels: {
-                    placeholder: 'Search labels',
-                    options: labelOptions,
-                    value: formState.labels as string | string[] | null,
-                    isMultiSelect: true as const,
-                    onConfirm: (selected: string | number | (string | number)[]) => {
-                      const nextLabels = Array.isArray(selected) ? selected.map(String) : [String(selected)];
-                      setFormState((prev) => ({ ...prev, labels: nextLabels }));
-                      setActivePanel(null);
-                    },
-                    onRequestCreate: async (text: string) => {
-                      const created = await postRequest<TaskLabel>('create/label', { labelName: text });
-                      setLocalLabels((prev) => [...prev, created]);
-                      setFormState((prev) => ({ ...prev, labels: [...prev.labels, created.labelName] }));
-                    },
-                    iconName: 'pricetag-outline',
-                    iconColor: COLORS.OFF_WHITE,
+            {(activePanel === 'labels' || activePanel === 'assignee' || activePanel === 'reporter') && (() => {
+              const searchPanelConfig = {
+                labels: {
+                  placeholder: 'Search labels',
+                  options: labelOptions,
+                  value: formState.labels as string | string[] | null,
+                  isMultiSelect: true as const,
+                  onConfirm: (selected: string | number | (string | number)[]) => {
+                    const nextLabels = Array.isArray(selected) ? selected.map(String) : [String(selected)];
+                    setFormState((prev) => ({ ...prev, labels: nextLabels }));
+                    setActivePanel(null);
                   },
-                  assignee: {
-                    placeholder: 'Search assignee',
-                    options: collaboratorOptions,
-                    value: formState.assignee?.userId ?? null,
-                    isMultiSelect: false as const,
-                    onConfirm: (selected: string | number | (string | number)[]) => {
-                      const userId = Array.isArray(selected) ? selected[0] : selected;
-                      const assignee = collaborators.find((c) => c.userId === userId) ?? null;
-                      setFormState((prev) => ({ ...prev, assignee }));
-                      setActivePanel(null);
-                    },
-                    iconName: 'person-outline',
-                    iconColor: COLORS.OFF_WHITE,
+                  onRequestCreate: async (text: string) => {
+                    const created = await postRequest<TaskLabel>('create/label', { labelName: text });
+                    setLocalLabels((prev) => [...prev, created]);
+                    setFormState((prev) => ({ ...prev, labels: [...prev.labels, created.labelName] }));
                   },
-                  reporter: {
-                    placeholder: 'Search reporter',
-                    options: collaboratorOptions,
-                    value: formState.reporter?.userId ?? null,
-                    isMultiSelect: false as const,
-                    onConfirm: (selected: string | number | (string | number)[]) => {
-                      const userId = Array.isArray(selected) ? selected[0] : selected;
-                      const reporter = collaborators.find((c) => c.userId === userId) ?? null;
-                      setFormState((prev) => ({ ...prev, reporter }));
-                      setActivePanel(null);
-                    },
-                    iconName: 'person-outline',
-                    iconColor: COLORS.OFF_WHITE,
+                  iconName: 'pricetag-outline' as const,
+                  iconColor: COLORS.OFF_WHITE,
+                },
+                assignee: {
+                  placeholder: 'Search assignee',
+                  options: collaboratorOptions,
+                  value: formState.assignee?.userId ?? null,
+                  isMultiSelect: false as const,
+                  onConfirm: (selected: string | number | (string | number)[]) => {
+                    const userId = Array.isArray(selected) ? selected[0] : selected;
+                    const assignee = collaborators.find((c) => c.userId === userId) ?? null;
+                    setFormState((prev) => ({ ...prev, assignee }));
+                    setActivePanel(null);
                   },
-                };
-                const config = searchPanelConfig[activePanel as 'labels' | 'assignee' | 'reporter'];
-                return (
-                  <View style={[styles.panelContainer, { left: searchPanelOffset.left, top: searchPanelOffset.top, minWidth: 200 }]}>
-                    <SearchDropdownInput
-                      options={config.options}
-                      value={config.value}
-                      onConfirm={config.onConfirm}
-                      onRequestClose={() => setActivePanel(null)}
-                      onRequestCreate={'onRequestCreate' in config ? config.onRequestCreate : undefined}
-                      placeholderText={config.placeholder}
-                      isMultiSelect={config.isMultiSelect}
-                      iconName={config.iconName}
-                      iconColor={config.iconColor}
-                    />
-                  </View>
-                );
-              })()}
+                  iconName: 'person-outline' as const,
+                  iconColor: COLORS.OFF_WHITE,
+                },
+                reporter: {
+                  placeholder: 'Search reporter',
+                  options: collaboratorOptions,
+                  value: formState.reporter?.userId ?? null,
+                  isMultiSelect: false as const,
+                  onConfirm: (selected: string | number | (string | number)[]) => {
+                    const userId = Array.isArray(selected) ? selected[0] : selected;
+                    const reporter = collaborators.find((c) => c.userId === userId) ?? null;
+                    setFormState((prev) => ({ ...prev, reporter }));
+                    setActivePanel(null);
+                  },
+                  iconName: 'person-outline' as const,
+                  iconColor: COLORS.OFF_WHITE,
+                },
+              };
+              const config = searchPanelConfig[activePanel as 'labels' | 'assignee' | 'reporter'];
+              return (
+                <View style={[styles.panelContainer, { left: searchPanelOffset.left, top: searchPanelOffset.top, minWidth: 200 }]}>
+                  <SearchDropdownInput
+                    options={config.options}
+                    value={config.value}
+                    onConfirm={config.onConfirm}
+                    onRequestClose={() => setActivePanel(null)}
+                    onRequestCreate={'onRequestCreate' in config ? config.onRequestCreate : undefined}
+                    placeholderText={config.placeholder}
+                    isMultiSelect={config.isMultiSelect}
+                    iconName={config.iconName}
+                    iconColor={config.iconColor}
+                  />
+                </View>
+              );
+            })()}
 
             {(activePanel === 'startDate' || activePanel === 'dueDate') && (
               <View style={[styles.panelContainer, { left: datePanelOffset.left, top: datePanelOffset.top, padding: 0, borderWidth: 0 }]}> 
@@ -476,8 +624,7 @@ const AddTask: React.FC<AddTaskProps> = ({
               <View style={styles.projectSelectorAnchor}>
                 <Pressable
                   style={styles.projectSelector}
-                  onPress={() => setProjectDropdownOpen((prev) => !prev)}
-                >
+                  onPress={() => setProjectDropdownOpen((prev) => !prev)}>
                   <Text style={styles.projectSelectorText}>{selectedProjectName}</Text>
                   <Ionicons name="chevron-down-outline" size={12} color={COLORS.OFF_WHITE} />
                 </Pressable>
@@ -517,8 +664,8 @@ const AddTask: React.FC<AddTaskProps> = ({
               <Pressable style={[styles.actionButton, styles.actionButtonMuted]} onPress={handleCancel}>
                 <Text style={styles.actionButtonMutedText}>Cancel</Text>
               </Pressable>
-              <Pressable style={[styles.actionButton, styles.actionButtonPrimary]} onPress={handleAdd}>
-                <Text style={styles.actionButtonPrimaryText}>Add task</Text>
+              <Pressable disabled={!formState.taskName} style={[styles.actionButton, styles.actionButtonPrimary, !formState.taskName && styles.actionButtonPrimaryDisabled]} onPress={handleAdd}>
+                <Text style={[styles.actionButtonPrimaryText,  !formState.taskName && styles.actionButtonPrimaryDisabledText]}>Add task</Text>
               </Pressable>
             </View>
           </View>

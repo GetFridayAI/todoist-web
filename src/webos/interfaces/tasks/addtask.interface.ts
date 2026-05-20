@@ -7,6 +7,7 @@ import {
   TaskReminder,
   TaskUser,
 } from '../../../shared/interfaces/tasks.interface';
+import { COLORS } from '../../../shared/styles/colors.styles';
 
 export interface AddTaskPayload {
   taskName: string;
@@ -56,7 +57,14 @@ export const PRIORITY_OPTIONS: DropdownOption[] = Object.values(PRIORITY)
   .filter((priority) => typeof priority === 'number')
   .map((priority) => ({
     label: `Priority ${priority}`,
+    shortfallName: `P${priority}`,
     value: priority as number,
+    iconName: 'flag',
+    iconColor:
+      priority === PRIORITY.P0 ? COLORS.RED_BLOOD
+        : priority === PRIORITY.P1 ? COLORS.ORANGE
+        : priority === PRIORITY.P2 ? COLORS.YELLOW
+        : COLORS.GREEN,
   }));
 
 export const TASK_TYPE_OPTIONS: DropdownOption[] = [

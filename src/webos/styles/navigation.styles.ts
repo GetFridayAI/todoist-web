@@ -103,16 +103,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.GREY,
   },
   addTaskIcon: {
-    backgroundColor: COLORS.RED_BLOOD,
     width: SPACING.LARGE,
     height: SPACING.LARGE,
     borderRadius: SPACING.LARGE,
     justifyContent: 'center',
     alignItems: 'center',
     display: 'flex',
+    fontWeight: FONT_WEIGHT.BOLD,
   },
   addTaskTextButton: {
-    color: COLORS.RED_BLOOD
+    color: COLORS.RED_BLOOD,
+    fontWeight: FONT_WEIGHT.BOLD,
   },
   addMenuOverlay: {
     position: 'absolute',

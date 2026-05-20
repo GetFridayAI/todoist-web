@@ -30,6 +30,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.SMALL,
     paddingVertical: SPACING.SMALL,
     fontSize: FONT_SIZES.SMALL,
+    outlineWidth: 0,
+    outlineColor: 'rgba(0,0,0,0)',
+    outlineStyle: 'none' as any,
   },
   dateQuickList: {
     gap: SPACING.SMALL,
@@ -39,6 +42,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACING.SMALL,
+    height: SPACING.LARGE,
+    borderRadius: SPACING.SMALL,
+    paddingHorizontal: SPACING.EXTRA_SMALL,
+  },
+  dateQuickRowHovered: {
+    backgroundColor: COLORS.GREY_DARK,
   },
   dateQuickLeft: {
     flexDirection: 'row',
@@ -48,7 +57,7 @@ const styles = StyleSheet.create({
   },
   dateQuickText: {
     color: COLORS.WHITE,
-    fontSize: FONT_SIZES.MEDIUM,
+    fontSize: FONT_SIZES.SMALL,
   },
   dateQuickMeta: {
     color: COLORS.OFF_WHITE,
@@ -59,10 +68,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: SPACING.SMALL,
+    marginBottom: SPACING.EXTRA_SMALL,
   },
   calendarMonthText: {
     color: COLORS.WHITE,
-    fontSize: FONT_SIZES.MEDIUM,
+    fontSize: FONT_SIZES.SMALL,
     fontWeight: FONT_WEIGHT.BOLD,
   },
   calendarHeaderActions: {
@@ -91,7 +102,14 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   calendarCellSelected: {
-    backgroundColor: COLORS.RED_DEEP,
+    borderWidth: 1,
+    borderColor: COLORS.RED_BLOOD,
+    borderRadius: 999,
+  },
+  calendarCellHovered: {
+    borderWidth: 1,
+    borderColor: COLORS.RED_BLOOD,
+    borderRadius: 999,
   },
   calendarCellText: {
     color: COLORS.WHITE,

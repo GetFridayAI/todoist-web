@@ -6,9 +6,10 @@ import NavigationItem from './NavigationItem';
 import Projects from './Projects';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../../shared/styles/colors.styles';
-import { SPACING } from '../../../../shared/styles/spacing.styles';
+import { FONT_SIZES, SPACING } from '../../../../shared/styles/spacing.styles';
 import { TaskLabel, TaskProject, TaskUser } from '../../../../shared/interfaces/tasks.interface';
 import AddTask from '../../tasks/AddTask';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 
 interface NavigationBarProps {
     projects: TaskProject[];
@@ -67,13 +68,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                         setIsAddTaskHovered(false);
                     }
                 }}
-                onPress={() => setIsAddMenuOpen(!isAddMenuOpen)}>
-                <Ionicons 
-                    name='add' 
-                    color={COLORS.BLACK} 
-                    size={SPACING.LARGE}
-                    style={styles.addTaskIcon}></Ionicons>
-                <Text style={styles.addTaskTextButton}>Add</Text>
+                onPress={() => setIsAddTaskModalOpen(true)}>
+                <MaterialIcons name="add-task" size={FONT_SIZES.EXTRA_LARGE} color={COLORS.RED_BLOOD} style={styles.addTaskIcon} />
+                <Text style={styles.addTaskTextButton}>Add Task</Text>
             </Pressable>
             
 

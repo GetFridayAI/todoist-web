@@ -106,7 +106,7 @@ const SearchDropdownInput: React.FC<SearchDropdownInputProps> = ({
             return (
               <Pressable
                 key={String(option.value)}
-                style={[styles.option, isHovered && styles.optionHovered, isSelected && styles.optionSelected]}
+                style={[styles.option, isHovered && styles.optionHovered]}
                 onHoverIn={() => setHoveredOptionValue(option.value)}
                 onHoverOut={() => setHoveredOptionValue(null)}
                 onPress={() => handleOptionPress(option)}

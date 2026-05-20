@@ -12,5 +12,6 @@ export const COLORS = {
     GREY_LIGHT: '#808080',
     GREEN: '#7ec8ad',
     PURPLE: '#a970ff',
-    YELLOW: '#ff9913'
+    YELLOW: '#ff9913',
+    ORANGE: '#ff6f00',
 }

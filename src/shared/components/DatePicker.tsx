@@ -108,7 +108,10 @@ const getWeekdayLabels = (firstDayOfWeek: WeekdayIndex): string[] => {
 
 const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange, onRequestClose }) => {
   const [inputValue, setInputValue] = React.useState(selectedDate);
+  const [hoveredDate, setHoveredDate] = React.useState<string | null>(null);
+  const [hoveredPreset, setHoveredPreset] = React.useState<DatePreset | null>(null);
   const [currentMonth, setCurrentMonth] = React.useState<Date>(() => {
+
     const parsed = parseIsoDate(selectedDate);
     return parsed ?? new Date();
   });
@@ -129,6 +132,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange, onReque
     setInputValue(isoDate);
     onChange(isoDate);
     setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+    onRequestClose();
   };
 
   const handleInputChange = (nextValue: string) => {
@@ -191,70 +195,82 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange, onReque
         />
 
         <View style={styles.dateQuickList}>
-          {quickOptions.map((quickOption) => (
-            <Pressable
-              key={quickOption.key}
-              style={styles.dateQuickRow}
-              onPress={() => applyDate(resolvePresetDate(quickOption.key))}
-            >
-              <View style={styles.dateQuickLeft}>
-                <Ionicons name={quickOption.icon} size={16} color={quickOption.iconColor} />
-                <Text style={styles.dateQuickText}>{quickOption.label}</Text>
-              </View>
-              <Text style={styles.dateQuickMeta}>{quickOption.metaText}</Text>
-            </Pressable>
-          ))}
+            {quickOptions.map((quickOption) => (
+                <Pressable
+                    key={quickOption.key}
+                    style={[
+                        styles.dateQuickRow,
+                        hoveredPreset === quickOption.key && styles.dateQuickRowHovered,
+                    ]}
+                    onPress={() => applyDate(resolvePresetDate(quickOption.key))}
+                    onHoverIn={() => setHoveredPreset(quickOption.key)}
+                    onHoverOut={() => setHoveredPreset(null)}
+                >
+                    <View style={styles.dateQuickLeft}>
+                        <Ionicons name={quickOption.icon} size={16} color={quickOption.iconColor} />
+                        <Text style={styles.dateQuickText}>{quickOption.label}</Text>
+                    </View>
+                    <Text style={styles.dateQuickMeta}>{quickOption.metaText}</Text>
+                </Pressable>
+            ))}
         </View>
 
         <View style={styles.calendarHeader}>
-          <Text style={styles.calendarMonthText}>{toMonthLabel(currentMonth)}</Text>
-          <View style={styles.calendarHeaderActions}>
-            <Pressable
-              onPress={() =>
-                setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
-              }
-            >
-              <Ionicons name="chevron-back-outline" size={16} color={COLORS.OFF_WHITE} />
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
-              }
-            >
-              <Ionicons name="chevron-forward-outline" size={16} color={COLORS.OFF_WHITE} />
-            </Pressable>
-          </View>
+            <Text style={styles.calendarMonthText}>{toMonthLabel(currentMonth)}</Text>
+            <View style={styles.calendarHeaderActions}>
+                <Pressable
+                    onPress={() =>
+                        setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
+                    }
+                >
+                    <Ionicons name="chevron-back-outline" size={16} color={COLORS.OFF_WHITE} />
+                </Pressable>
+                <Pressable
+                    onPress={() =>
+                        setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
+                    }
+                >
+                    <Ionicons name="chevron-forward-outline" size={16} color={COLORS.OFF_WHITE} />
+                </Pressable>
+            </View>
         </View>
 
         <View style={styles.calendarWeekdays}>
-          {weekdayLabels.map((weekday) => (
-            <Text key={weekday} style={styles.calendarWeekdayText}>
-              {weekday}
-            </Text>
-          ))}
+            {weekdayLabels.map((weekday) => (
+                <Text key={weekday} style={styles.calendarWeekdayText}>
+                    {weekday}
+                </Text>
+            ))}
         </View>
 
         <View style={styles.calendarGrid}>
-          {calendarGrid.map((dateCell, index) => {
-            if (!dateCell) {
-              return <View key={`empty-${index}`} style={styles.calendarCell} />;
-            }
+            {calendarGrid.map((dateCell, index) => {
+                if (!dateCell) {
+                    return <View key={`empty-${index}`} style={styles.calendarCell} />;
+                }
 
-            const isoDate = toIsoDate(dateCell);
-            const isSelected = selectedDate === isoDate;
+                const isoDate = toIsoDate(dateCell);
+                const isSelected = selectedDate === isoDate;
+                const isHovered = hoveredDate === isoDate;
 
-            return (
-              <Pressable
-                key={isoDate}
-                style={[styles.calendarCell, isSelected && styles.calendarCellSelected]}
-                onPress={() => applyDate(dateCell)}
-              >
-                <Text style={[styles.calendarCellText, isSelected && styles.calendarCellTextSelected]}>
-                  {dateCell.getDate()}
-                </Text>
-              </Pressable>
-            );
-          })}
+                return (
+                    <Pressable
+                        key={isoDate}
+                        style={[
+                            styles.calendarCell,
+                            isSelected && styles.calendarCellSelected,
+                            !isSelected && isHovered && styles.calendarCellHovered,
+                        ]}
+                        onPress={() => applyDate(dateCell)}
+                        onHoverIn={() => setHoveredDate(isoDate)}
+                        onHoverOut={() => setHoveredDate(null)}
+                    >
+                        <Text style={[styles.calendarCellText, isSelected && styles.calendarCellTextSelected]}>
+                            {dateCell.getDate()}
+                        </Text>
+                    </Pressable>
+                );
+            })}
         </View>
       </View>
     </View>

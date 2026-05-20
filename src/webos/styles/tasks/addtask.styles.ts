@@ -14,15 +14,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   modalCard: {
     width: '92%',
     maxWidth: 880,
-    backgroundColor: '#1e1f22',
+    backgroundColor: COLORS.BLACK,
     borderColor: '#4a4d52',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: SPACING.SMALL,
     padding: SPACING.MEDIUM,
     gap: SPACING.SMALL,
   },
@@ -40,11 +40,20 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.LARGE,
     fontWeight: FONT_WEIGHT.MEDIUM,
     borderBottomWidth: 0,
+    outlineWidth: 0,
+    outlineColor: 'rgba(0,0,0,0)',
+    outlineStyle: 'none' as any,
   },
   descriptionInput: {
     color: COLORS.OFF_WHITE,
     fontSize: FONT_SIZES.MEDIUM,
     borderBottomWidth: 0,
+    minHeight: 24,
+    maxHeight: 200,
+    paddingTop: 0,
+    outlineWidth: 0,
+    outlineColor: 'rgba(0,0,0,0)',
+    outlineStyle: 'none' as any,
   },
   chipsRow: {
     flexDirection: 'row',
@@ -70,10 +79,14 @@ const styles = StyleSheet.create({
     color: COLORS.OFF_WHITE,
     fontSize: FONT_SIZES.SMALL,
   },
+  chipTextPlaceholder: {
+    opacity: 0.7,
+  },
   reminderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    display: 'none'
   },
   reminderLabel: {
     color: COLORS.OFF_WHITE,
@@ -169,6 +182,8 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     paddingHorizontal: SPACING.SMALL,
     paddingVertical: SPACING.SMALL,
+    outlineWidth: 0,
+    outlineColor: 'rgba(0,0,0,0)',
   },
   dateActionButton: {
     borderWidth: 1,
@@ -225,6 +240,8 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     paddingHorizontal: SPACING.SMALL,
     paddingVertical: SPACING.SMALL,
+    outlineWidth: 0,
+    outlineColor: 'rgba(0,0,0,0)',
   },
   timePanelButtons: {
     flexDirection: 'row',
@@ -323,12 +340,18 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT.MEDIUM,
   },
   actionButtonPrimary: {
-    backgroundColor: '#5a2d2d',
+    backgroundColor: COLORS.RED_BLOOD,
+  },
+  actionButtonPrimaryDisabled: {
+    backgroundColor: COLORS.RED_DEEP,
   },
   actionButtonPrimaryText: {
-    color: '#b9b9b9',
+    color: COLORS.WHITE,
     fontSize: FONT_SIZES.MEDIUM,
     fontWeight: FONT_WEIGHT.BOLD,
+  },
+  actionButtonPrimaryDisabledText: {
+    color: COLORS.OFF_WHITE
   },
   reminderModalCard: {
     width: '90%',
@@ -379,6 +402,8 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.WHITE,
     fontSize: FONT_SIZES.MEDIUM,
+    outlineWidth: 0,
+    outlineColor: 'rgba(0,0,0,0)',
   },
   reminderAvatar: {
     width: 20,
