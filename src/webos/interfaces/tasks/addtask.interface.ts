@@ -2,7 +2,6 @@ import { DropdownOption } from '../../../shared/components/dropdowninput.interfa
 import {
   PRIORITY,
   TASK_TYPE,
-  TaskLabel,
   TaskProject,
   TaskReminder,
   TaskUser,
@@ -28,12 +27,8 @@ export interface AddTaskPayload {
 
 export interface AddTaskProps {
   visible: boolean;
-  collaborators: TaskUser[];
-  projects: TaskProject[];
-  labels: TaskLabel[];
   onClose: () => void;
   onCancel: () => void;
-  onAdd: (payload: AddTaskPayload) => void;
 }
 
 export type ActivePanel =

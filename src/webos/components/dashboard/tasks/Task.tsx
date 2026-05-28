@@ -65,16 +65,28 @@ const Task: React.FC<TaskComponentProps> = ({
         <Text style={[styles.taskName, isCompleted && styles.taskNameCompleted]}>{taskName}</Text>
 
         <View style={styles.metaRow}>
-          <View style={styles.metaChip}>
-            <Ionicons name="calendar-outline" size={12} color={getIconColor(isStartDatePast, isStartDateToday)} />
-            <Text style={[styles.metaText, isStartDatePast && styles.metaTextPast, isStartDateToday && styles.metaTextToday, !isStartDatePast && !isStartDateToday && styles.metaTextFuture]}>
-              {formatDateToDayMonth(dates.start)}
-            </Text>
-            <Ionicons name="calendar-outline" size={12} color={getIconColor(isDueDatePast, isDueDateToday)} />
-            <Text style={[styles.metaText, isDueDatePast && styles.metaTextPast, isDueDateToday && styles.metaTextToday, !isDueDatePast && !isDueDateToday && styles.metaTextFuture]}>
-              {formatDateToDayMonth(dates.due)}
-            </Text>
-          </View>
+          {
+            (dates.start || dates.due) && (
+              <View style={styles.metaChip}>
+                {
+                  dates.start && (<>
+                    <Ionicons name="calendar-outline" size={12} color={getIconColor(isStartDatePast, isStartDateToday)} />
+                    <Text style={[styles.metaText, isStartDatePast && styles.metaTextPast, isStartDateToday && styles.metaTextToday, !isStartDatePast && !isStartDateToday && styles.metaTextFuture]}>
+                      {formatDateToDayMonth(dates.start)}
+                    </Text>
+                  </>)
+                }
+                {
+                  dates.due && (<>
+                    <Ionicons name="calendar-outline" size={12} color={getIconColor(isDueDatePast, isDueDateToday)} />
+                    <Text style={[styles.metaText, isDueDatePast && styles.metaTextPast, isDueDateToday && styles.metaTextToday, !isDueDatePast && !isDueDateToday && styles.metaTextFuture]}>
+                      {formatDateToDayMonth(dates.due)}
+                    </Text>
+                  </>)
+                }
+              </View>
+            )
+          }
 
           {labelsDisplay && (
             <View style={styles.metaChip}>
@@ -90,15 +102,19 @@ const Task: React.FC<TaskComponentProps> = ({
           <View style={styles.metaChip}>
             <Ionicons name="folder-outline" size={12} color={COLORS.RED_BLOOD} />
             <Text style={styles.metaTextSecondary}>
-              {project.projectname}/{assignee.userName}
+              {project.projectname}
             </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{getInitials(assignee.userName)}</Text>
-      </View>
+      {
+        assignee && (
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{getInitials(assignee.userName)}</Text>
+          </View>
+        )
+      }
     </Pressable>
   );
 };

@@ -1,15 +1,15 @@
 import fetchTasksAllMock from './fetch/tasks/all';
 import fetchProjectsAllMock from './fetch/projects/all';
 import healthMock from './health';
-import retrieveAllCollaboratorsMock from './retrieveAllCollaborators';
-import retrieveAllLabelsMock from './retrieveAllLabels';
+import retrieveAllCollaboratorsMock from './fetch/collaborators/all';
+import retrieveAllLabelsMock from './fetch/labels/all';
 import createLabelMock from './createLabel';
 
 export const mockResponses: Record<string, unknown> = {
   health: healthMock,
   'fetch/tasks/all': fetchTasksAllMock,
   'fetch/projects/all': fetchProjectsAllMock,
-  retrieveAllCollaborators: retrieveAllCollaboratorsMock,
-  retrieveAllLabels: retrieveAllLabelsMock,
+  'fetch/collaborators/all': retrieveAllCollaboratorsMock,
+  'fetch/labels/all': retrieveAllLabelsMock,
   'create/label': createLabelMock,
 };

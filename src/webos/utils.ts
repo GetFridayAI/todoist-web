@@ -1,5 +1,5 @@
 import { AddTaskPayload } from './interfaces/tasks/addtask.interface';
-import { PRIORITY, TASK_TYPE, TaskReminder } from '../shared/interfaces/tasks.interface';
+import { TaskReminder } from '../shared/interfaces/tasks.interface';
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 

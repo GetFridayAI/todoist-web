@@ -1,4 +1,4 @@
-import { TaskLabel } from '../../shared/interfaces/tasks.interface';
+import { TaskLabel } from '../../../../shared/interfaces/tasks.interface';
 
 const labelsMock: TaskLabel[] = [
   { labelId: 1, labelName: 'frontend' },

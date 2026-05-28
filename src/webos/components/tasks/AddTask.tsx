@@ -16,10 +16,19 @@ import SearchDropdownInput from '../../../shared/components/SearchDropdownInput'
 import {
   PRIORITY,
   TASK_TYPE,
+  Task,
   TaskReminder,
 } from '../../../shared/interfaces/tasks.interface';
 import { TaskLabel } from '../../../shared/interfaces/tasks.interface';
 import { COLORS } from '../../../shared/styles/colors.styles';
+import { FONT_SIZES, SPACING } from '../../../shared/styles/spacing.styles';
+import {
+  useAppStoreDispatch,
+  useLabelsStore,
+  useProjectsStore,
+  useTasksStore,
+  useUsersStore,
+} from '../../../shared/context/AppStoreContext';
 import {
   ActivePanel,
   AddTaskPayload,
@@ -36,19 +45,23 @@ import {
   toIsoDate,
 } from '../../utils';
 import { postRequest } from '../../../api/request';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
+import { AppStoreActionType } from '../../../shared/context/actions/AppStoreActions';
 
 const MIN_DESCRIPTION_INPUT_HEIGHT = 24;
 const MAX_DESCRIPTION_INPUT_HEIGHT = 200;
 
 const AddTask: React.FC<AddTaskProps> = ({
   visible,
-  collaborators,
-  projects,
-  labels,
   onClose,
   onCancel,
-  onAdd,
 }) => {
+  const collaborators = useUsersStore();
+  const projects = useProjectsStore();
+  const labels = useLabelsStore();
+  const tasks = useTasksStore();
+  const dispatch = useAppStoreDispatch();
+
   const [formState, setFormState] = React.useState<AddTaskPayload>(buildInitialState);
   const [activePanel, setActivePanel] = React.useState<ActivePanel>(null);
   const [projectDropdownOpen, setProjectDropdownOpen] = React.useState(false);
@@ -95,14 +108,7 @@ const AddTask: React.FC<AddTaskProps> = ({
     value: collaborator.userId,
   }));
 
-  // localLabels may grow when a new label is created via the "Create X" link.
-  const [localLabels, setLocalLabels] = React.useState(labels);
-
-  React.useEffect(() => {
-    setLocalLabels(labels);
-  }, [labels]);
-
-  const labelOptions = localLabels.map((label) => ({
+  const labelOptions = labels.map((label) => ({
     label: label.labelName,
     value: label.labelName,
   }));
@@ -223,7 +229,40 @@ const AddTask: React.FC<AddTaskProps> = ({
   };
 
   const handleAdd = () => {
-    onAdd(formState);
+    const nextTaskId = tasks.length > 0 ? Math.max(...tasks.map((task) => task.taskId)) + 1 : 1;
+    const nowIsoDate = toIsoDate(new Date());
+    const fallbackUser = collaborators[0] ?? { userId: -1, userName: 'Unknown' };
+    const fallbackProject = projects[0] ?? {
+      projectId: -1,
+      projectname: 'Inbox',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
+    };
+
+    const nextTask: Task = {
+      taskId: nextTaskId,
+      taskName: formState.taskName,
+      taskDesc: formState.taskDesc,
+      priority: formState.priority ?? PRIORITY.P3,
+      assignee: formState.assignee ?? null,
+      reporter: formState.reporter ?? fallbackUser,
+      dates: {
+        created: nowIsoDate,
+        updated: nowIsoDate,
+        start: formState.dates.start,
+        due: formState.dates.due,
+      },
+      project: formState.project ?? fallbackProject,
+      labels: formState.labels,
+      comments: [],
+      taskType: formState.taskType ?? TASK_TYPE.TASK,
+      isRecurring: formState.isRecurring,
+      reminders: formState.reminders,
+    };
+    console.log('Adding task:', nextTask);
+
+    dispatch({ type: AppStoreActionType.ADD_TASK, payload: nextTask });
     resetLocalState();
     onClose();
   };
@@ -356,7 +395,7 @@ const AddTask: React.FC<AddTaskProps> = ({
                   openDropdownPanel('priority', priorityChipRef);
                 }}
               >
-                <Ionicons name="flag-outline" size={14} color={selectedPriorityText ? ((PRIORITY_OPTIONS.find((o) => o.value === formState.priority)?.iconColor)) : COLORS.OFF_WHITE} />
+                <MaterialIcons name="outlined-flag" size={FONT_SIZES.MEDIUM} color={selectedPriorityText ? ((PRIORITY_OPTIONS.find((o) => o.value === formState.priority)?.iconColor)) : COLORS.OFF_WHITE} />
                 <Text style={[styles.chipText, !selectedPriorityText && styles.chipTextPlaceholder]}>
                   {selectedPriorityText ?? 'Priority'}
                 </Text>
@@ -381,7 +420,7 @@ const AddTask: React.FC<AddTaskProps> = ({
                   openDatePanel('startDate', dateChipRef);
                 }}
               >
-                <Ionicons name="calendar-outline" size={14} color={selectedDateText ? startDateColor : COLORS.OFF_WHITE} />
+                <MaterialIcons name="event" size={FONT_SIZES.MEDIUM} color={selectedDateText ? startDateColor : COLORS.OFF_WHITE} />
                 <Text style={[styles.chipText, !selectedDateText && styles.chipTextPlaceholder, selectedDateText ? { color: startDateColor } : null]}>
                   {selectedDateText ?? 'Date'}
                 </Text>
@@ -541,7 +580,7 @@ const AddTask: React.FC<AddTaskProps> = ({
                   },
                   onRequestCreate: async (text: string) => {
                     const created = await postRequest<TaskLabel>('create/label', { labelName: text });
-                    setLocalLabels((prev) => [...prev, created]);
+                    dispatch({ type: AppStoreActionType.ADD_LABEL, payload: created });
                     setFormState((prev) => ({ ...prev, labels: [...prev.labels, created.labelName] }));
                   },
                   iconName: 'pricetag-outline' as const,

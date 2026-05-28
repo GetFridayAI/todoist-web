@@ -6,6 +6,7 @@ import { DashboardRoutes as AppRoutes } from './src/shared/interfaces/routes.int
 import { View } from 'react-native';
 import { APP_THEMES } from './src/shared/interfaces/app.interface';
 import { ThemeProvider, useTheme } from './src/shared/context/ThemeContext';
+import { AppStoreProvider } from './src/shared/context/AppStoreContext';
 import appStyles from './src/shared/styles/app.styles';
 
 const ROUTE_SEGMENT_MAP: Record<string, AppRoutes> = {
@@ -65,7 +66,9 @@ function ThemedApp() {
 export default function App() {
   return (
     <ThemeProvider theme={APP_THEME}>
-      <ThemedApp />
+      <AppStoreProvider>
+        <ThemedApp />
+      </AppStoreProvider>
     </ThemeProvider>
   );
 }

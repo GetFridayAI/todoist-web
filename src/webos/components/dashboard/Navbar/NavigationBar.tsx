@@ -7,28 +7,24 @@ import Projects from './Projects';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../../shared/styles/colors.styles';
 import { FONT_SIZES, SPACING } from '../../../../shared/styles/spacing.styles';
-import { TaskLabel, TaskProject, TaskUser } from '../../../../shared/interfaces/tasks.interface';
+import { useLabelsStore, useProjectsStore, useUsersStore } from '../../../../shared/context/AppStoreContext';
 import AddTask from '../../tasks/AddTask';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 
 interface NavigationBarProps {
-    projects: TaskProject[];
-    collaborators: TaskUser[];
-    labels: TaskLabel[];
     isProjectsLoading?: boolean;
 }
 
 const NavigationBar: React.FC<NavigationBarProps> = ({
-    projects,
-    collaborators,
-    labels,
     isProjectsLoading = false,
 }) => {
+	const projects = useProjectsStore();
+	const collaborators = useUsersStore();
+	const labels = useLabelsStore();
 	const menuItems = Object.values(MENU_ITEMS);
 	const [activeMenuItem, setActiveMenuItem] = React.useState<MENU_ITEMS>(MENU_ITEMS.Today);
     const [isProfileHovered, setIsProfileHovered] = React.useState(false);
     const [isAddTaskHovered, setIsAddTaskHovered] = React.useState(false);
-    const [isAddMenuOpen, setIsAddMenuOpen] = React.useState(false);
     const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
 
     const handleCancelAddTask = () => {
@@ -39,7 +35,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
         setIsAddTaskModalOpen(false);
     };
 
-    const handleAddTask = (_payload: unknown) => {
+    const handleAddTask = () => {
         setIsAddTaskModalOpen(false);
     };
 
@@ -63,11 +59,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             <Pressable 
                 style={[styles.addTaskContainer, isAddTaskHovered && styles.addTaskContainerHovered]}
                 onHoverIn={() => setIsAddTaskHovered(true)}
-                onHoverOut={() => {
-                    if (!isAddMenuOpen) {
-                        setIsAddTaskHovered(false);
-                    }
-                }}
+                onHoverOut={() => {setIsAddTaskHovered(false);}}
                 onPress={() => setIsAddTaskModalOpen(true)}>
                 <MaterialIcons name="add-task" size={FONT_SIZES.EXTRA_LARGE} color={COLORS.RED_BLOOD} style={styles.addTaskIcon} />
                 <Text style={styles.addTaskTextButton}>Add Task</Text>
@@ -84,38 +76,10 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             
             <Projects projects={projects} isLoading={isProjectsLoading} />
 
-            {isAddMenuOpen && (
-                <Pressable
-                    style={styles.addMenuOverlay}
-                    onPress={() => setIsAddMenuOpen(false)}
-                />
-            )}
-
-            {isAddMenuOpen && (
-                <View style={styles.addMenuDropdown}>
-                    <Pressable
-                        style={styles.addMenuItem}
-                        onPress={() => {
-                            setIsAddMenuOpen(false);
-                            setIsAddTaskModalOpen(true);
-                        }}
-                    >
-                        <Text style={styles.addMenuItemText}>Add Task</Text>
-                    </Pressable>
-                    <Pressable style={[styles.addMenuItem, styles.addMenuItemLast]} onPress={() => setIsAddMenuOpen(false)}>
-                        <Text style={styles.addMenuItemText}>Add Project</Text>
-                    </Pressable>
-                </View>
-            )}
-
             <AddTask
                 visible={isAddTaskModalOpen}
-                collaborators={collaborators}
-                projects={projects}
-                labels={labels}
                 onClose={handleCloseAddTask}
                 onCancel={handleCancelAddTask}
-                onAdd={handleAddTask}
             />
 		</View>
 	);

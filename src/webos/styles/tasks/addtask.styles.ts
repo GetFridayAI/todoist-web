@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT.BOLD,
   },
   actionButtonPrimaryDisabledText: {
-    color: COLORS.OFF_WHITE
+    color: COLORS.SLATE
   },
   reminderModalCard: {
     width: '90%',

@@ -48,7 +48,7 @@ export interface Task {
   taskName: string;
   taskDesc: string;
   priority: PRIORITY;
-  assignee: TaskUser;
+  assignee: TaskUser | null;
   reporter: TaskUser;
   dates: TaskDates;
   project: TaskProject;

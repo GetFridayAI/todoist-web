@@ -1,4 +1,4 @@
-import { TaskUser } from '../../shared/interfaces/tasks.interface';
+import { TaskUser } from '../../../../shared/interfaces/tasks.interface';
 
 const collaboratorsMock: TaskUser[] = [
   { userId: 1, userName: 'Amit Rai' },

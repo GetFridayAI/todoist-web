@@ -10,6 +10,7 @@ export const COLORS = {
     GREY_DARK: '#262626',
     GREY: '#322f2a',
     GREY_LIGHT: '#808080',
+    SLATE: '#636363',
     GREEN: '#7ec8ad',
     PURPLE: '#a970ff',
     YELLOW: '#ff9913',

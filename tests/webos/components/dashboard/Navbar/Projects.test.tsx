@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ActivityIndicator } from 'react-native';
 import NavbarProjects from '../../../../../src/webos/components/dashboard/Navbar/Projects';
 import { mockProjects } from '../../../../fixtures/projects.fixtures';
 
@@ -9,8 +10,11 @@ describe('NavbarProjects', () => {
   });
 
   it('shows a loading indicator while projects are loading', async () => {
-    const { getByText } = render(<NavbarProjects projects={[]} isLoading />);
+    const { getByText, UNSAFE_getByType, queryByText } = render(<NavbarProjects projects={[]} isLoading />);
     expect(getByText('My Projects')).toBeTruthy();
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
+    expect(queryByText('chevron-up-outline')).toBeNull();
+    expect(queryByText('chevron-down-outline')).toBeNull();
   });
 
   it('renders each project name from props', async () => {

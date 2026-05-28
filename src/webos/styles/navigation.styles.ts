@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     paddingHorizontal: SPACING.MEDIUM,
-    paddingVertical: SPACING.EXTRA_SMALL,
+    paddingVertical: SPACING.SMALL,
     borderRadius: SPACING.SMALL,
     display: 'flex',
     flexDirection: 'row',
