@@ -1,11 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import Dashboard from './src/webos/components/dashboard/Dashboard';
-import { Routes as AppRoutes } from './src/shared/interfaces/routes.interface';
+import { DashboardRoutes as AppRoutes } from './src/shared/interfaces/routes.interface';
 import { View } from 'react-native';
 import { APP_THEMES } from './src/shared/interfaces/app.interface';
-import { ThemeProvider, useTheme } from './src/shared/context/ThemeContext';
+import { ThemeProvider } from './src/shared/context/ThemeContext';
 import appStyles from './src/shared/styles/app.styles';
 
 const ROUTE_SEGMENT_MAP: Record<string, AppRoutes> = {
@@ -39,7 +39,6 @@ function DashboardRoute() {
 const APP_THEME = APP_THEMES.DARK;
 
 function ThemedApp() {
-  const { styles } = useTheme();
   return (
     <View style={[appStyles[APP_THEME], { flex: 1 }]}>
       <BrowserRouter>
