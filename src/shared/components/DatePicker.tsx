@@ -236,8 +236,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange, onReque
         </View>
 
         <View style={styles.calendarWeekdays}>
-            {weekdayLabels.map((weekday) => (
-                <Text key={weekday} style={styles.calendarWeekdayText}>
+            {weekdayLabels.map((weekday, index) => (
+                <Text key={`${weekday}-${index}`} style={styles.calendarWeekdayText}>
                     {weekday}
                 </Text>
             ))}
