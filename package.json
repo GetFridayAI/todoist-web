@@ -36,7 +36,7 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-web": "^0.21.0",
-    "react-router-dom": "^6.30.3"
+    "react-router-dom": "^6.30.4"
   },
   "devDependencies": {
     "@testing-library/react-native": "^13.3.3",
