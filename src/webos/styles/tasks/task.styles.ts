@@ -51,6 +51,33 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 5,
   },
+  parentTaskStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#3a3d45',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 2,
+    backgroundColor: '#1a1d23',
+  },
+  parentTaskText: {
+    color: '#c9cbd1',
+    fontSize: 12,
+    flex: 1,
+    marginRight: 8,
+  },
+  parentTaskCountGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  parentTaskCountText: {
+    color: '#d2d4d9',
+    fontSize: 12,
+  },
   taskName: {
     fontSize: 14,
     fontWeight: '500',

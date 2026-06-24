@@ -4,4 +4,4 @@
  * Place only framework-level configuration here – per-module mocks belong in individual test files.
  */
 
-import '@testing-library/jest-native/extend-expect';
+// Note: @testing-library/jest-native/extend-expect not installed; using react-native testing library instead

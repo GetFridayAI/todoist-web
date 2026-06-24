@@ -9,12 +9,15 @@ import { ThemeProvider, useTheme } from './src/shared/context/ThemeContext';
 import { AppStoreProvider } from './src/shared/context/AppStoreContext';
 import appStyles from './src/shared/styles/app.styles';
 
+const GLOBAL_FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
+
 const ROUTE_SEGMENT_MAP: Record<string, AppRoutes> = {
   search: AppRoutes.SEARCH,
   inbox: AppRoutes.INBOX,
   today: AppRoutes.TODAY,
   upcoming: AppRoutes.UPCOMING,
   completed: AppRoutes.COMPLETED,
+  backlog: AppRoutes.BACKLOG,
   projects: AppRoutes.PROJECTS,
   settings: AppRoutes.SETTINGS,
 };
@@ -46,6 +49,8 @@ function ThemedApp() {
     if (typeof document !== 'undefined') {
       document.body.style.userSelect = 'none';
       (document.body.style as any).webkitUserSelect = 'none';
+      document.documentElement.style.fontFamily = GLOBAL_FONT_FAMILY;
+      document.body.style.fontFamily = GLOBAL_FONT_FAMILY;
     }
   }, []);
 

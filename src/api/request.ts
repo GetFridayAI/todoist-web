@@ -1,22 +1,28 @@
 type Primitive = string | number | boolean | null | undefined;
 
-type RequestArgs = Record<string, Primitive | Primitive[] | Record<string, unknown> | unknown[]>;
+type RequestArgs = object;
 import { mockResponses } from './mocks';
 
 const USER_ID = 'USR_2A9X1B7K';
 const SESSION_TOKEN = 'SESS_91FQ3LM8ZT';
 
+enum REQUEST_METHOD {
+  GET = 'GET',
+  POST = 'POST',
+}
+
 interface MockInvocation {
   route: string;
-  method: 'GET' | 'POST';
+  method: REQUEST_METHOD;
   args?: RequestArgs;
 }
 
+type REQUEST_SCHEME = 'http' | 'https';
+
+const requestScheme: REQUEST_SCHEME = "https";
 const runtimeEnv = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
-
 const isMockEnabled = runtimeEnv?.EXPO_PUBLIC_USE_MOCKS === 'true';
-
-const BASE_URI = '';
+const BASE_URI = `${requestScheme}://`;
 
 const withAuthArgs = (args?: RequestArgs): RequestArgs => {
   return {
@@ -31,7 +37,6 @@ const normalizeRoute = (route: string): string => {
   if (!trimmedRoute) {
     throw new Error('Route is required.');
   }
-
   return trimmedRoute;
 };
 
@@ -41,8 +46,7 @@ const buildQueryString = (args?: RequestArgs): string => {
   }
 
   const searchParams = new URLSearchParams();
-
-  Object.entries(args).forEach(([key, value]) => {
+  Object.entries(args as Record<string, unknown>).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((item) => {
         if (item !== undefined && item !== null) {
@@ -77,7 +81,6 @@ const loadMockResponse = async <TResponse>(invocation: MockInvocation): Promise<
   }
 
   const mockResponse = mockResponses[normalizedPath];
-
   if (mockResponse === undefined) {
     throw new Error(`No mock response found for route: ${normalizedPath}`);
   }
@@ -85,7 +88,6 @@ const loadMockResponse = async <TResponse>(invocation: MockInvocation): Promise<
   if (typeof mockResponse === 'function') {
     return (mockResponse as (input: MockInvocation) => TResponse)(invocation);
   }
-
   return mockResponse as TResponse;
 };
 
@@ -94,12 +96,12 @@ export const getRequest = async <TResponse>(route: string, args?: RequestArgs): 
   const enrichedArgs = withAuthArgs(args);
 
   if (isMockEnabled) {
-    return loadMockResponse<TResponse>({ route: normalizedRoute, method: 'GET', args: enrichedArgs });
+    return loadMockResponse<TResponse>({ route: normalizedRoute, method: REQUEST_METHOD.GET, args: enrichedArgs });
   }
 
   const queryString = buildQueryString(enrichedArgs);
   const response = await fetch(`${BASE_URI}${normalizedRoute}${queryString}`, {
-    method: 'GET',
+    method: REQUEST_METHOD.GET,
   });
 
   if (!response.ok) {
@@ -114,11 +116,11 @@ export const postRequest = async <TResponse>(route: string, args?: RequestArgs):
   const enrichedArgs = withAuthArgs(args);
 
   if (isMockEnabled) {
-    return loadMockResponse<TResponse>({ route: normalizedRoute, method: 'POST', args: enrichedArgs });
+    return loadMockResponse<TResponse>({ route: normalizedRoute, method: REQUEST_METHOD.POST, args: enrichedArgs });
   }
 
   const response = await fetch(`${BASE_URI}${normalizedRoute}`, {
-    method: 'POST',
+    method: REQUEST_METHOD.POST,
     headers: {
       'Content-Type': 'application/json',
     },

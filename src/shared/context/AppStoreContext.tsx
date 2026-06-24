@@ -7,6 +7,7 @@ const TasksContext = React.createContext<Task[] | null>(null);
 const ProjectsContext = React.createContext<TaskProject[] | null>(null);
 const UsersContext = React.createContext<TaskUser[] | null>(null);
 const LabelsContext = React.createContext<TaskLabel[] | null>(null);
+const LocaleContext = React.createContext<string | null>(null);
 const DispatchContext = React.createContext<React.Dispatch<AppStoreAction> | null>(null);
 
 interface AppStoreProviderProps {
@@ -15,6 +16,10 @@ interface AppStoreProviderProps {
 
 export const AppStoreProvider: React.FC<AppStoreProviderProps> = ({ children }) => {
   const [state, dispatch] = React.useReducer(appStoreReducer, initialAppStoreState);
+  const locale = React.useMemo(() => {
+    const resolvedLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+    return resolvedLocale || 'en-US';
+  }, []);
 
   return (
     <DispatchContext.Provider value={dispatch}>
@@ -22,7 +27,9 @@ export const AppStoreProvider: React.FC<AppStoreProviderProps> = ({ children }) 
         <ProjectsContext.Provider value={state.projects}>
           <UsersContext.Provider value={state.users}>
             <LabelsContext.Provider value={state.labels}>
-              {children}
+              <LocaleContext.Provider value={locale}>
+                {children}
+              </LocaleContext.Provider>
             </LabelsContext.Provider>
           </UsersContext.Provider>
         </ProjectsContext.Provider>
@@ -43,5 +50,6 @@ export const useTasksStore = (): Task[] => useContextValue(TasksContext, 'useTas
 export const useProjectsStore = (): TaskProject[] => useContextValue(ProjectsContext, 'useProjectsStore');
 export const useUsersStore = (): TaskUser[] => useContextValue(UsersContext, 'useUsersStore');
 export const useLabelsStore = (): TaskLabel[] => useContextValue(LabelsContext, 'useLabelsStore');
+export const useLocaleStore = (): string => useContextValue(LocaleContext, 'useLocaleStore');
 export const useAppStoreDispatch = (): React.Dispatch<AppStoreAction> =>
   useContextValue(DispatchContext, 'useAppStoreDispatch');

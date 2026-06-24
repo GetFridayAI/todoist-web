@@ -1,4 +1,3 @@
-import { AddTaskPayload } from './interfaces/tasks/addtask.interface';
 import { TaskReminder } from '../shared/interfaces/tasks.interface';
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
@@ -11,9 +10,9 @@ const formatFromDate = (date: Date): string => {
 	return `${day} ${month}`;
 };
 
-export const formatDateToDayMonth = (dateString: string): string => {
+export const parseDateString = (dateString: string): Date | null => {
 	if (!dateString || typeof dateString !== 'string') {
-		return dateString;
+		return null;
 	}
 
 	const trimmed = dateString.trim();
@@ -30,34 +29,27 @@ export const formatDateToDayMonth = (dateString: string): string => {
 			&& parsedDate.getMonth() === month - 1
 			&& parsedDate.getDate() === day
 		) {
-			return formatFromDate(parsedDate);
+			return parsedDate;
 		}
 	}
 
-	const fallback = new Date(trimmed);
+	const normalized = trimmed.replace(/\//g, '-');
+	const fallback = new Date(normalized);
 	if (Number.isNaN(fallback.getTime())) {
-		return trimmed;
+		return null;
 	}
 
-	return formatFromDate(fallback);
+	return fallback;
 };
 
-export const buildInitialState = (): AddTaskPayload => ({
-	taskName: '',
-	taskDesc: '',
-	priority: null,
-	assignee: null,
-	reporter: null,
-	dates: {
-		start: '',
-		due: '',
-	},
-	project: null,
-	labels: [],
-	taskType: null,
-	isRecurring: false,
-	reminders: [],
-});
+export const formatDateToDayMonth = (dateString: string): string => {
+	const parsedDate = parseDateString(dateString);
+	if (!parsedDate) {
+		return dateString;
+	}
+
+	return formatFromDate(parsedDate);
+};
 
 export const toIsoDate = (date: Date): string => {
 	const year = date.getFullYear();

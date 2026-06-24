@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../shared/styles/colors.styles';
-import { SPACING } from '../../shared/styles/spacing.styles';
+import { FONT_WEIGHT, SPACING } from '../../shared/styles/spacing.styles';
 
 const styles = StyleSheet.create({
   container: {
@@ -31,16 +31,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    height: 50
+    fontWeight: FONT_WEIGHT.BOLD,
+    height: SPACING.EXTRA_HUGE
   },
   metaText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.LIGHT,
   },
   errorText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.MEDIUM,
     color: COLORS.RED_BLOOD,
   },
 });

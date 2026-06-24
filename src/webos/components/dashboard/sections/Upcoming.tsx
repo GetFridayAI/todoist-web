@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import styles from '../../../styles/dashboard.styles';
 import { DashboardSectionComponentProps } from '../../../interfaces/dashboard.interface';
+import styles from '../../../styles/dashboard.styles';
 
 const Upcoming: React.FC<DashboardSectionComponentProps> = ({ routeParams }) => {
   return (

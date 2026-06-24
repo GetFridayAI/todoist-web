@@ -1,15 +1,11 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import styles from '../../../styles/dashboard.styles';
 import { DashboardSectionComponentProps } from '../../../interfaces/dashboard.interface';
+import PriorityTasksSection from './common/PriorityTasksSection';
 
-const Inbox: React.FC<DashboardSectionComponentProps> = ({ routeParams }) => {
-  return (
-    <View>
-      <Text style={styles.title}>Inbox</Text>
-      <Text style={styles.metaText}>Params: {JSON.stringify(routeParams ?? {})}</Text>
-    </View>
-  );
+const Inbox: React.FC<DashboardSectionComponentProps> = ({ tasks = [] }) => {
+  const inboxTasks = tasks.filter((task) => task.project?.projectId === 0);
+
+  return <PriorityTasksSection title="Inbox" tasks={inboxTasks} showProjectMeta={false} />;
 };
 
 export default Inbox;

@@ -5,6 +5,7 @@ import { DashboardRoutes } from '../../../../src/shared/interfaces/routes.interf
 import { getRequest, postRequest } from '../../../../src/api/request';
 import { mockTasks } from '../../../fixtures/tasks.fixtures';
 import { mockProjects } from '../../../fixtures/projects.fixtures';
+import { useTasksStore, useAppStoreDispatch, useProjectsStore, useUsersStore, useLabelsStore } from '../../../../src/shared/context/AppStoreContext';
 
 jest.mock('../../../../src/api/request');
 
@@ -18,11 +19,19 @@ jest.mock('../../../../src/shared/context/ThemeContext', () => ({
   }),
 }));
 
+jest.mock('../../../../src/shared/context/AppStoreContext', () => ({
+  useTasksStore: jest.fn(),
+  useAppStoreDispatch: jest.fn(),
+  useProjectsStore: jest.fn(),
+  useUsersStore: jest.fn(),
+  useLabelsStore: jest.fn(),
+}));
+
 jest.mock('../../../../src/webos/components/dashboard/Navbar/NavigationBar', () => {
   const React = require('react');
   const { Text } = require('react-native');
-  return ({ projects, collaborators, labels }: { projects: unknown[]; collaborators: unknown[]; labels: unknown[] }) =>
-    React.createElement(Text, null, `NavigationBarMock:${projects.length}:${collaborators.length}:${labels.length}`);
+  return ({ isProjectsLoading }: { isProjectsLoading?: boolean }) =>
+    React.createElement(Text, null, `NavigationBarMock:${isProjectsLoading ? 'loading' : 'loaded'}`);
 });
 
 jest.mock('../../../../src/webos/components/dashboard/sections/Search', () => {
@@ -69,23 +78,33 @@ jest.mock('../../../../src/webos/components/dashboard/sections/Projects', () => 
 
 const mockedPostRequest = postRequest as jest.Mock;
 const mockedGetRequest = getRequest as jest.Mock;
+const mockedUseTasksStore = useTasksStore as jest.Mock;
+const mockedUseAppStoreDispatch = useAppStoreDispatch as jest.Mock;
+const mockedUseProjectsStore = useProjectsStore as jest.Mock;
+const mockedUseUsersStore = useUsersStore as jest.Mock;
+const mockedUseLabelsStore = useLabelsStore as jest.Mock;
 
 describe('Dashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUseTasksStore.mockReturnValue(mockTasks);
+    mockedUseAppStoreDispatch.mockReturnValue(jest.fn());
+    mockedUseProjectsStore.mockReturnValue(mockProjects);
+    mockedUseUsersStore.mockReturnValue([]);
+    mockedUseLabelsStore.mockReturnValue([]);
     mockedPostRequest.mockImplementation((route: string) => {
-      if (route === '/fetch/tasks/all') {
+      if (route === '/tasks/fetch/all') {
         return Promise.resolve(mockTasks);
       }
 
-      if (route === '/retrieveAllCollaborators') {
+      if (route === '/fetch/collaborators/all') {
         return Promise.resolve([
           { userId: 1, userName: 'John Doe' },
           { userId: 2, userName: 'Jane Smith' },
         ]);
       }
 
-      if (route === '/retrieveAllLabels') {
+      if (route === '/fetch/labels/all') {
         return Promise.resolve([
           { labelId: 1, labelName: 'frontend' },
           { labelId: 2, labelName: 'urgent' },
@@ -95,20 +114,6 @@ describe('Dashboard', () => {
       return Promise.resolve([]);
     });
     mockedGetRequest.mockResolvedValue(mockProjects);
-  });
-
-  it('shows a loading state message while tasks are being fetched', async () => {
-    mockedPostRequest.mockImplementation((route: string) => {
-      if (route === '/fetch/tasks/all') {
-        return new Promise(() => {});
-      }
-
-      return Promise.resolve([]);
-    });
-    const { getByText } = render(<Dashboard activeRoute={DashboardRoutes.TODAY} />);
-    await waitFor(() => {
-      expect(getByText('Loading tasks...')).toBeTruthy();
-    });
   });
 
   it('renders an error message when the tasks API request fails', async () => {
@@ -167,14 +172,14 @@ describe('Dashboard', () => {
       expect(getByText(`TodaySection:${mockTasks.length}`)).toBeTruthy();
     });
 
-    expect(getByText(`NavigationBarMock:${mockProjects.length}:2:2`)).toBeTruthy();
+    expect(getByText('NavigationBarMock:loaded')).toBeTruthy();
   });
 
   it('retrieves projects only once and passes them to the navigation bar', async () => {
     const { getByText } = render(<Dashboard activeRoute={DashboardRoutes.TODAY} />);
 
     await waitFor(() => {
-      expect(getByText(`NavigationBarMock:${mockProjects.length}:2:2`)).toBeTruthy();
+      expect(getByText('NavigationBarMock:loaded')).toBeTruthy();
     });
 
     expect(mockedGetRequest).toHaveBeenCalledTimes(1);

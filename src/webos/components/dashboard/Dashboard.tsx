@@ -16,6 +16,7 @@ import Completed from './sections/Completed';
 import Settings from './sections/Settings';
 import Projects from './sections/Projects';
 import { DashboardSectionComponentProps } from '../../interfaces/dashboard.interface';
+import Backlog from './sections/Backlog';
 
 interface DashboardProps {
   activeRoute?: DashboardRoutes;
@@ -28,6 +29,7 @@ const SECTION_COMPONENT_MAP: Record<DashboardRoutes, React.ComponentType<Dashboa
   [DashboardRoutes.TODAY]: Today,
   [DashboardRoutes.UPCOMING]: Upcoming,
   [DashboardRoutes.COMPLETED]: Completed,
+  [DashboardRoutes.BACKLOG]: Backlog,
   [DashboardRoutes.SETTINGS]: Settings,
   [DashboardRoutes.PROJECTS]: Projects,
 };
@@ -51,7 +53,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeRoute, routeParams }) => {
         setTasksError(null);
 
         const [taskResponse, projectsResponse, collaboratorsResponse, labelsResponse] = await Promise.allSettled([
-            postRequest<Task[]>('/fetch/tasks/all'),
+            postRequest<Task[]>('/tasks/fetch/all'),
             getRequest<TaskProject[]>('/fetch/projects/all'),
             postRequest<TaskUser[]>('/fetch/collaborators/all'),
             postRequest<TaskLabel[]>('/fetch/labels/all'),
@@ -97,7 +99,6 @@ const Dashboard: React.FC<DashboardProps> = ({ activeRoute, routeParams }) => {
         {isLoadingTasks && (
             <View style={getStyles([styles.loaderContainer])}>
                 <ActivityIndicator size="large" />
-                <Text style={getStyles([styles.metaText])}>Loading tasks...</Text>
             </View>
         )}
         {!isLoadingTasks && tasksError && <Text style={getStyles([styles.errorText])}>{tasksError}</Text>}

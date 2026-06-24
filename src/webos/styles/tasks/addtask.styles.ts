@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
   chipsAnchor: {
     position: 'relative',
     zIndex: 40,
+    overflow: 'visible',
   },
   chip: {
     flexDirection: 'row',
@@ -101,6 +102,12 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: SPACING.SMALL,
     position: 'absolute',
+    zIndex: 120,
+    elevation: 30,
+    shadowColor: COLORS.BLACK,
+    shadowOpacity: 0.24,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 8 },
   },
   datePickerContainer: {
     position: 'absolute',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { Image } from 'react-native';
 import NavigationItem from '../../../../../src/webos/components/dashboard/Navbar/NavigationItem';
 import { MENU_ITEMS } from '../../../../../src/webos/interfaces/navigation.interface';
 import { COLORS } from '../../../../../src/shared/styles/colors.styles';
@@ -59,19 +60,18 @@ describe('NavigationItem', () => {
     expect(getByText('Search')).toBeTruthy();
   });
 
-  it('renders the correct icon name for the given menu item', () => {
-    const { getByText } = render(
+  it('renders the icon image for the given menu item', () => {
+    const { UNSAFE_getByType } = render(
       <NavigationItem label={MENU_ITEMS.Search} updateActiveTab={mockUpdateActiveTab} />,
     );
-    // Ionicons is mocked to render name as text
-    expect(getByText('search-outline')).toBeTruthy();
+    expect(UNSAFE_getByType(Image).props.source).toBeTruthy();
   });
 
-  it('renders the call-to-done icon for the Completed menu item', () => {
-    const { getByText } = render(
+  it('renders the icon image for the Completed menu item', () => {
+    const { UNSAFE_getByType } = render(
       <NavigationItem label={MENU_ITEMS.Completed} updateActiveTab={mockUpdateActiveTab} />,
     );
-    expect(getByText('checkmark-done-outline')).toBeTruthy();
+    expect(UNSAFE_getByType(Image).props.source).toBeTruthy();
   });
 
   it('applies hover style when cursor enters the item', () => {

@@ -1,4 +1,4 @@
-import { PRIORITY, TASK_TYPE, TasksResponse } from '../../../../shared/interfaces/tasks.interface';
+import { PRIORITY, TASK_STATUS, TASK_TYPE, TasksResponse } from '../../../../shared/interfaces/tasks.interface';
 
 const mockTasks: TasksResponse = [
   {
@@ -23,10 +23,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -56,10 +60,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -89,10 +97,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -122,10 +134,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -155,10 +171,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -188,10 +208,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -221,10 +245,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -254,10 +282,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -287,10 +319,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -320,10 +356,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -353,10 +393,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -386,10 +430,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -419,10 +467,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -452,10 +504,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',
@@ -485,10 +541,14 @@ const mockTasks: TasksResponse = [
     project: {
       projectId: 3423,
       projectname: 'Test Project',
+      parentProjectId: null,
+      openTasksCount: null,
+      hasSubProjects: false,
     },
     labels: [],
     comments: [],
     taskType: TASK_TYPE.TASK,
+    status: TASK_STATUS.TODO,
     reminders: [
       {
         date: '2026/09/09',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { MENU_ITEMS } from '../../../interfaces/navigation.interface';
+import { MENU_ITEMS, NAVIGATION_PATHS } from '../../../interfaces/navigation.interface';
 import styles from '../../../styles/navigation.styles';
 import NavigationItem from './NavigationItem';
 import Projects from './Projects';
@@ -19,10 +19,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
     isProjectsLoading = false,
 }) => {
 	const projects = useProjectsStore();
-	const collaborators = useUsersStore();
-	const labels = useLabelsStore();
 	const menuItems = Object.values(MENU_ITEMS);
-	const [activeMenuItem, setActiveMenuItem] = React.useState<MENU_ITEMS>(MENU_ITEMS.Today);
+
+    const getActiveMenuItemFromPath = (): MENU_ITEMS => {
+        const currentPath = typeof window !== 'undefined' ? window?.location?.pathname ?? NAVIGATION_PATHS[MENU_ITEMS.Today] : NAVIGATION_PATHS[MENU_ITEMS.Today];
+        const matchedPath = Object.entries(NAVIGATION_PATHS).find(([_, path]) => path === currentPath);
+        return matchedPath ? (matchedPath[0] as MENU_ITEMS) : MENU_ITEMS.Today;
+    }
+
+	const [activeMenuItem, setActiveMenuItem] = React.useState<MENU_ITEMS>(getActiveMenuItemFromPath());
     const [isProfileHovered, setIsProfileHovered] = React.useState(false);
     const [isAddTaskHovered, setIsAddTaskHovered] = React.useState(false);
     const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
@@ -80,6 +85,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
                 visible={isAddTaskModalOpen}
                 onClose={handleCloseAddTask}
                 onCancel={handleCancelAddTask}
+                defaultPriority={null}
             />
 		</View>
 	);

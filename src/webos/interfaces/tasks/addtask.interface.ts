@@ -1,79 +1,12 @@
-import { DropdownOption } from '../../../shared/components/dropdowninput.interface';
-import {
-  PRIORITY,
-  TASK_TYPE,
-  TaskProject,
-  TaskReminder,
-  TaskUser,
-} from '../../../shared/interfaces/tasks.interface';
-import { COLORS } from '../../../shared/styles/colors.styles';
-
-export interface AddTaskPayload {
-  taskName: string;
-  taskDesc: string;
-  priority: PRIORITY | null;
-  assignee: TaskUser | null;
-  reporter: TaskUser | null;
-  dates: {
-    start: string;
-    due: string;
-  };
-  project: TaskProject | null;
-  labels: string[];
-  taskType: TASK_TYPE | null;
-  isRecurring: boolean;
-  reminders: TaskReminder[];
-}
-
-export interface AddTaskProps {
-  visible: boolean;
-  onClose: () => void;
-  onCancel: () => void;
-}
-
-export type ActivePanel =
-  | null
-  | 'labels'
-  | 'priority'
-  | 'taskType'
-  | 'assignee'
-  | 'reporter'
-  | 'startDate'
-  | 'dueDate';
-
-export type ReminderMode = 'dateTime' | 'beforeTask';
-
-export const TIME_OPTIONS: DropdownOption[] = Array.from({ length: 24 }, (_, hour) => ({
-  label: `${String(hour).padStart(2, '0')}:00`,
-  value: `${String(hour).padStart(2, '0')}:00`,
-}));
-
-export const PRIORITY_OPTIONS: DropdownOption[] = Object.values(PRIORITY)
-  .filter((priority) => typeof priority === 'number')
-  .map((priority) => ({
-    label: `Priority ${priority}`,
-    shortfallName: `P${priority}`,
-    value: priority as number,
-    iconName: 'flag',
-    iconColor:
-      priority === PRIORITY.P0 ? COLORS.RED_BLOOD
-        : priority === PRIORITY.P1 ? COLORS.ORANGE
-        : priority === PRIORITY.P2 ? COLORS.YELLOW
-        : COLORS.GREEN,
-  }));
-
-export const TASK_TYPE_OPTIONS: DropdownOption[] = [
-  { label: 'Task', value: TASK_TYPE.TASK },
-  { label: 'Sub task', value: TASK_TYPE.SUB_TASK },
-];
-
-export const REPEAT_OPTIONS = [
-  'Every day',
-  'Every week on Wednesday',
-  'Every weekday (Mon - Fri)',
-  'Every month on the 29th',
-  'Every year on April 29th',
-  'Custom...',
-];
-
-export const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+export { AddTaskProps } from './add/add-task.interface';
+export { AddTaskPayload } from './add/add-task-payload.interface';
+export { ReminderMode } from './add/add-task-reminder.interface';
+export {
+  AddTaskAttributesSectionHandle,
+  AddTaskAttributesSectionProps,
+  AddTaskAttributesValue,
+  AddTaskDatesValue,
+  AddTaskAttributePanel,
+  ActivePanel,
+} from './add/attributes/add-task-attributes.interface';
+export { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from './add/attributes/add-task-options.interface';

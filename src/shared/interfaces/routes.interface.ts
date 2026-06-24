@@ -5,5 +5,6 @@ export enum DashboardRoutes {
   UPCOMING = 'Upcoming',
   COMPLETED = 'Completed',
   SETTINGS = 'Settings',
-  PROJECTS = 'Projects'
+  PROJECTS = 'Projects',
+  BACKLOG = 'Backlog',
 }

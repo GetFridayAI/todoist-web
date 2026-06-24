@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useNavigate } from 'react-router-dom';
-import { MENU_ICONS, MENU_ITEMS, NavigationIconName } from '../../../interfaces/navigation.interface';
+import { MENU_ICONS, MENU_ITEMS, NAVIGATION_PATHS, NavigationIconName } from '../../../interfaces/navigation.interface';
 import styles from '../../../styles/navigation.styles';
 import { FONT_SIZES } from '../../../../shared/styles/spacing.styles';
 import { COLORS } from '../../../../shared/styles/colors.styles';
@@ -18,6 +18,7 @@ const ICON_ASSETS: Record<NavigationIconName, number> = {
 	today: require('../../../../../assets/icons/today.svg'),
 	upcoming: require('../../../../../assets/icons/upcoming.svg'),
 	completed: require('../../../../../assets/icons/completed.svg'),
+	backlog: require('../../../../../assets/icons/backlog.svg'),
 };
 
 const NavigationItem: React.FC<NavigationItemProps> = ({ label, isActive = false, updateActiveTab }) => {
@@ -28,7 +29,7 @@ const NavigationItem: React.FC<NavigationItemProps> = ({ label, isActive = false
 	const iconColor = isActive ? COLORS.RED_BLOOD : COLORS.WHITE;
 
 	const handlePress = () => {
-		navigate(`/dashboard/${label.toLowerCase()}`);
+		navigate(NAVIGATION_PATHS[label]);
         updateActiveTab(label);
 	};
 

@@ -96,6 +96,6 @@ describe('Task', () => {
 
   it('renders the assignee username in the project/assignee metadata chip', () => {
     const { getByText } = render(<Task {...baseProps} />);
-    expect(getByText(/Test Project\/John Doe/)).toBeTruthy();
+    expect(getByText(/Test Project\s*\|\s*frontend\s*\|\s*auth/)).toBeTruthy();
   });
 });

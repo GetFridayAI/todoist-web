@@ -2,6 +2,16 @@ import { TaskProject } from '../../../../shared/interfaces/tasks.interface';
 
 const mockProjects: TaskProject[] = [
   {
+    projectId: 0,
+    projectname: 'Inbox',
+    projectIconColor: '#a970ff',
+    createdAt: '2026/01/01',
+    parentProjectId: null,
+    isFavorite: true,
+    openTasksCount: 5,
+    hasSubProjects: false,
+  },
+  {
     projectId: 1,
     projectname: 'Work',
     projectIconColor: '#a970ff',

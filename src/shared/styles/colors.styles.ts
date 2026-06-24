@@ -15,4 +15,5 @@ export const COLORS = {
     PURPLE: '#a970ff',
     YELLOW: '#ff9913',
     ORANGE: '#ff6f00',
+    SMOKE: '#31343c',
 }

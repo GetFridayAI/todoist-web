@@ -1,4 +1,4 @@
-import { PRIORITY, TASK_TYPE, Task, TasksResponse } from '../../src/shared/interfaces/tasks.interface';
+import { PRIORITY, TASK_STATUS, TASK_TYPE, Task, TasksResponse } from '../../src/shared/interfaces/tasks.interface';
 import { TaskComponentLabel } from '../../src/webos/interfaces/tasks/task.interface';
 
 export const mockAssignee = {
@@ -43,9 +43,10 @@ export const mockTask: Task = {
   reporter: mockReporter,
   dates: mockDates,
   project: mockProject,
-  labels: ['frontend', 'auth'],
+  labels: mockTaskLabels,
   comments: [],
   taskType: TASK_TYPE.TASK,
+  status: TASK_STATUS.TODO,
   reminders: [],
 };
 

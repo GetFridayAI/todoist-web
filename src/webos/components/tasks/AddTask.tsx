@@ -1,27 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import {
-  Animated,
-  Easing,
-  Modal,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import DropdownInput from '../../../shared/components/DropdownInput';
-import DatePicker from '../../../shared/components/DatePicker';
-import SearchDropdownInput from '../../../shared/components/SearchDropdownInput';
-import {
-  PRIORITY,
-  TASK_TYPE,
-  Task,
-  TaskReminder,
-} from '../../../shared/interfaces/tasks.interface';
-import { TaskLabel } from '../../../shared/interfaces/tasks.interface';
-import { COLORS } from '../../../shared/styles/colors.styles';
-import { FONT_SIZES, SPACING } from '../../../shared/styles/spacing.styles';
+import { Animated, Easing, Modal, Pressable, Text, View } from 'react-native';
+import { postRequest } from '../../../api/request';
 import {
   useAppStoreDispatch,
   useLabelsStore,
@@ -29,63 +8,46 @@ import {
   useTasksStore,
   useUsersStore,
 } from '../../../shared/context/AppStoreContext';
-import {
-  ActivePanel,
-  AddTaskPayload,
-  AddTaskProps,
-  PRIORITY_OPTIONS,
-  ReminderMode,
-  TASK_TYPE_OPTIONS,
-} from '../../interfaces/tasks/addtask.interface';
-import styles from '../../styles/tasks/addtask.styles';
-import {
-  buildInitialState,
-  formatDateToDayMonth,
-  formatReminderSummary,
-  toIsoDate,
-} from '../../utils';
-import { postRequest } from '../../../api/request';
-import MaterialIcons from '@react-native-vector-icons/material-icons';
+import { AddTaskProps } from '../../interfaces/tasks/add/add-task.interface';
+import modalStyles from '../../styles/tasks/add/add-task-modal.styles';
+import { toIsoDate } from '../../utils';
 import { AppStoreActionType } from '../../../shared/context/actions/AppStoreActions';
-
-const MIN_DESCRIPTION_INPUT_HEIGHT = 24;
-const MAX_DESCRIPTION_INPUT_HEIGHT = 200;
+import {
+  CreateTaskResponse,
+  PRIORITY,
+  TASK_STATUS,
+  TASK_TYPE,
+  TaskLabel,
+  Task,
+} from '../../../shared/interfaces/tasks.interface';
+import { AddTaskAttributesSectionHandle } from '../../interfaces/tasks/add/attributes/add-task-attributes.interface';
+import { AddTaskProjectSectionHandle } from '../../interfaces/tasks/add/add-task-project.interface';
+import { AddTaskReminderSectionHandle } from '../../interfaces/tasks/add/add-task-reminder.interface';
+import { AddTaskTitleSectionHandle } from '../../interfaces/tasks/add/add-task-title.interface';
+import AddTaskAttributesSection from './add/AddTaskAttributesSection';
+import AddTaskProjectSection from './add/AddTaskProjectSection';
+import AddTaskReminderSection from './add/AddTaskReminderSection';
+import AddTaskTitleSection from './add/AddTaskTitleSection';
 
 const AddTask: React.FC<AddTaskProps> = ({
   visible,
   onClose,
   onCancel,
+  defaultPriority,
 }) => {
   const collaborators = useUsersStore();
   const projects = useProjectsStore();
   const labels = useLabelsStore();
   const tasks = useTasksStore();
   const dispatch = useAppStoreDispatch();
-
-  const [formState, setFormState] = React.useState<AddTaskPayload>(buildInitialState);
-  const [activePanel, setActivePanel] = React.useState<ActivePanel>(null);
-  const [projectDropdownOpen, setProjectDropdownOpen] = React.useState(false);
-  const [isReminderWindowOpen, setIsReminderWindowOpen] = React.useState(false);
-  const [reminderMode, setReminderMode] = React.useState<ReminderMode>('dateTime');
-  const [reminderDraft, setReminderDraft] = React.useState<TaskReminder>({
-    date: toIsoDate(new Date()),
-    time: '21:00',
-  });
+  const [isTaskNameReady, setIsTaskNameReady] = React.useState(false);
 
   const scaleAnimation = React.useRef(new Animated.Value(0.94)).current;
   const opacityAnimation = React.useRef(new Animated.Value(0)).current;
-  const chipsAnchorRef = React.useRef<View>(null);
-  const labelsChipRef = React.useRef<View>(null);
-  const assigneeChipRef = React.useRef<View>(null);
-  const reporterChipRef = React.useRef<View>(null);
-  const priorityChipRef = React.useRef<View>(null);
-  const taskTypeChipRef = React.useRef<View>(null);
-  const dateChipRef = React.useRef<View>(null);
-  const deadlineChipRef = React.useRef<View>(null);
-  const [searchPanelOffset, setSearchPanelOffset] = React.useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const [dropdownPanelOffset, setDropdownPanelOffset] = React.useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const [datePanelOffset, setDatePanelOffset] = React.useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const [descriptionInputHeight, setDescriptionInputHeight] = React.useState(MIN_DESCRIPTION_INPUT_HEIGHT);
+  const titleSectionRef = React.useRef<AddTaskTitleSectionHandle>(null);
+  const attributesSectionRef = React.useRef<AddTaskAttributesSectionHandle>(null);
+  const projectSectionRef = React.useRef<AddTaskProjectSectionHandle>(null);
+  const reminderSectionRef = React.useRef<AddTaskReminderSectionHandle>(null);
 
   React.useEffect(() => {
     Animated.parallel([
@@ -103,132 +65,44 @@ const AddTask: React.FC<AddTaskProps> = ({
     ]).start();
   }, [opacityAnimation, scaleAnimation, visible]);
 
-  const collaboratorOptions = collaborators.map((collaborator) => ({
-    label: collaborator.userName,
-    value: collaborator.userId,
-  }));
+  const resetLocalState = React.useCallback(() => {
+    titleSectionRef.current?.reset();
+    attributesSectionRef.current?.reset();
+    projectSectionRef.current?.reset();
+    reminderSectionRef.current?.reset();
+    setIsTaskNameReady(false);
+  }, []);
 
-  const labelOptions = labels.map((label) => ({
-    label: label.labelName,
-    value: label.labelName,
-  }));
-
-  const projectDropdownOptions = React.useMemo(() => {
-    const childrenByParentId = new Map<number | null, typeof projects>();
-
-    projects.forEach((project) => {
-      const siblings = childrenByParentId.get(project.parentProjectId) ?? [];
-      siblings.push(project);
-      childrenByParentId.set(project.parentProjectId, siblings);
-    });
-
-    const flattened: Array<{ project: (typeof projects)[number]; depth: number; path: string }> = [];
-    const visited = new Set<number>();
-
-    const walk = (parentId: number | null, depth: number, pathParts: string[]) => {
-      const children = childrenByParentId.get(parentId) ?? [];
-
-      children.forEach((project) => {
-        if (visited.has(project.projectId)) {
-          return;
-        }
-
-        visited.add(project.projectId);
-        const nextPathParts = [...pathParts, project.projectname];
-        flattened.push({ project, depth, path: nextPathParts.join('/') });
-        walk(project.projectId, depth + 1, nextPathParts);
-      });
-    };
-
-    walk(null, 0, []);
-
-    // Include orphaned/cyclic entries that are not reachable from root.
-    projects.forEach((project) => {
-      if (visited.has(project.projectId)) {
-        return;
-      }
-
-      visited.add(project.projectId);
-      const path = project.projectname;
-      flattened.push({ project, depth: 0, path });
-      walk(project.projectId, 1, [project.projectname]);
-    });
-
-    return flattened;
-  }, [projects]);
-
-  const selectedProjectName = React.useMemo(() => {
-    const selectedProjectId = formState.project?.projectId;
-
-    if (!selectedProjectId) {
-      return 'Todoist';
-    }
-
-    const selectedProjectOption = projectDropdownOptions.find(
-      ({ project }) => project.projectId === selectedProjectId,
-    );
-
-    return selectedProjectOption?.path ?? formState.project?.projectname ?? 'Todoist';
-  }, [formState.project, projectDropdownOptions]);
-
-  const selectedLabelsText: string | null = formState.labels.length > 0
-    ? formState.labels[0] : null;
-
-  const selectedPriorityText: string | null = formState.priority !== null
-    ? (PRIORITY_OPTIONS.find((o) => o.value === formState.priority)?.shortfallName ?? null)
-    : null;
-
-  const selectedDateText: string | null = formState.dates.start
-    ? formatDateToDayMonth(formState.dates.start)
-    : null;
-
-  const selectedDueDateText: string | null = formState.dates.due
-    ? formatDateToDayMonth(formState.dates.due)
-    : null;
-
-  const resolveDateColor = (isoDate: string): string => {
-    const today = toIsoDate(new Date());
-    if (isoDate < today) return COLORS.RED_BLOOD;
-    if (isoDate === today) return COLORS.GREEN;
-    return COLORS.OFF_WHITE;
-  };
-
-  const startDateColor = formState.dates.start ? resolveDateColor(formState.dates.start) : COLORS.OFF_WHITE;
-  const dueDateColor = formState.dates.due ? resolveDateColor(formState.dates.due) : COLORS.OFF_WHITE;
-
-  const selectedAssigneeText: string | null = formState.assignee
-    ? formState.assignee.userName
-    : null;
-
-  const selectedReporterText: string | null = formState.reporter
-    ? formState.reporter.userName
-    : null;
-
-  const selectedTaskTypeText: string | null = formState.taskType !== null
-    ? (TASK_TYPE_OPTIONS.find((o) => o.value === formState.taskType)?.label ?? null)
-    : null;
-
-  const resetLocalState = () => {
-    setFormState(buildInitialState());
-    setActivePanel(null);
-    setProjectDropdownOpen(false);
-    setIsReminderWindowOpen(false);
-    setReminderMode('dateTime');
-    setReminderDraft({ date: toIsoDate(new Date()), time: '21:00' });
-    setDescriptionInputHeight(MIN_DESCRIPTION_INPUT_HEIGHT);
-  };
-
-  const handleCancel = () => {
+  const handleCancel = React.useCallback(() => {
     resetLocalState();
     onCancel();
-  };
+  }, [onCancel, resetLocalState]);
 
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     handleCancel();
     onClose();
-  };
+  }, [handleCancel, onClose]);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
+    const titleSection = titleSectionRef.current;
+    const attributesSection = attributesSectionRef.current;
+    const projectSection = projectSectionRef.current;
+    const reminderSection = reminderSectionRef.current;
+
+    if (!titleSection || !attributesSection || !projectSection || !reminderSection) {
+      return;
+    }
+
+    const taskName = titleSection.getTaskName();
+    if (!taskName) {
+      return;
+    }
+
+    const taskDesc = titleSection.getTaskDescription();
+    const attributes = attributesSection.getValues();
+    const selectedProject = projectSection.getProject();
+    const reminders = reminderSection.getReminders();
+
     const nextTaskId = tasks.length > 0 ? Math.max(...tasks.map((task) => task.taskId)) + 1 : 1;
     const nowIsoDate = toIsoDate(new Date());
     const fallbackUser = collaborators[0] ?? { userId: -1, userName: 'Unknown' };
@@ -240,548 +114,111 @@ const AddTask: React.FC<AddTaskProps> = ({
       hasSubProjects: false,
     };
 
-    const nextTask: Task = {
+    const newTask: Task = {
       taskId: nextTaskId,
-      taskName: formState.taskName,
-      taskDesc: formState.taskDesc,
-      priority: formState.priority ?? PRIORITY.P3,
-      assignee: formState.assignee ?? null,
-      reporter: formState.reporter ?? fallbackUser,
+      taskName,
+      taskDesc,
+      priority: attributes.priority ?? PRIORITY.P3,
+      assignee: attributes.assignee ?? null,
+      reporter: attributes.reporter ?? fallbackUser,
       dates: {
         created: nowIsoDate,
         updated: nowIsoDate,
-        start: formState.dates.start,
-        due: formState.dates.due,
+        start: attributes.dates.start,
+        due: attributes.dates.due,
       },
-      project: formState.project ?? fallbackProject,
-      labels: formState.labels,
+      project: selectedProject ?? fallbackProject,
+      labels: attributes.labels,
       comments: [],
-      taskType: formState.taskType ?? TASK_TYPE.TASK,
-      isRecurring: formState.isRecurring,
-      reminders: formState.reminders,
+      taskType: attributes.taskType ?? TASK_TYPE.TASK,
+      status: attributes.status ?? TASK_STATUS.TODO,
+      isRecurring: false,
+      reminders,
     };
-    console.log('Adding task:', nextTask);
 
-    dispatch({ type: AppStoreActionType.ADD_TASK, payload: nextTask });
+    // Ensure 'someday' label is added if neither start nor due dates are set
+    ensureSomedayLabelForNewTask(newTask);
+
+    await saveTask(newTask);
     resetLocalState();
     onClose();
   };
 
-  const updateDateField = (dateValue: string) => {
-    if (activePanel === 'startDate') {
-      setFormState((prev) => ({ ...prev, dates: { ...prev.dates, start: dateValue } }));
+  const saveTask = async (newTask: Task) => {
+    try {
+      const createTaskResponse = await postRequest<CreateTaskResponse>('/tasks/create', newTask);
+      if (createTaskResponse.success) {
+        dispatch({ type: AppStoreActionType.ADD_TASK, payload: newTask });
+      }
+    } catch (error) {
+      console.error('Error saving task:', error);
     }
+  };
 
-    if (activePanel === 'dueDate') {
-      setFormState((prev) => ({ ...prev, dates: { ...prev.dates, due: dateValue } }));
+  /**
+   * Ensures 'someday' label is added to new tasks without both start and due dates
+   * Called during task creation if neither start date nor due date is provided
+   */
+  const ensureSomedayLabelForNewTask = React.useCallback((task: Task) => {
+    const hasStartDate = !!task.dates.start;
+    const hasDueDate = !!task.dates.due;
+
+    // If both dates are empty, add 'someday' label
+    if (!hasStartDate && !hasDueDate) {
+      const somedayLabel: TaskLabel = labels.filter((label) => label.labelId === 0)[0];
+      // Check if 'someday' label is not already in the labels array
+      if (!task.labels.some((label) => label.labelId === 0)) {
+        task.labels.push(somedayLabel);
+      }
     }
-  };
-
-  const openDropdownPanel = (panel: 'priority' | 'taskType', chipRef: React.RefObject<View | null>) => {
-    chipRef.current?.measureLayout(
-      chipsAnchorRef.current as never,
-      (left, top, _width, height) => {
-        setDropdownPanelOffset({ left, top: top + height + 10 });
-        setActivePanel(panel);
-      },
-      () => {
-        setActivePanel(panel);
-      },
-    );
-  };
-
-  const openSearchPanel = (panel: 'labels' | 'assignee' | 'reporter', chipRef: React.RefObject<View | null>) => {
-    chipRef.current?.measureLayout(
-      chipsAnchorRef.current as never,
-      (left, top, _width, height) => {
-        setSearchPanelOffset({ left, top: top + height + 10 });
-        setActivePanel(panel);
-      },
-      () => {
-        setActivePanel(panel);
-      },
-    );
-  };
-
-  const openDatePanel = (panel: 'startDate' | 'dueDate', chipRef: React.RefObject<View | null>) => {
-    chipRef.current?.measureLayout(
-      chipsAnchorRef.current as never,
-      (left, top, _width, height) => {
-        setDatePanelOffset({ left, top: top + height + 10 });
-        setActivePanel(panel);
-      },
-      () => {
-        setActivePanel(panel);
-      },
-    );
-  };
+  }, []);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
-      <View style={styles.modalOverlay}>
-        <Pressable style={styles.modalBackdrop} onPress={handleClose} />
+      <View style={modalStyles.modalOverlay}>
+        <Pressable style={modalStyles.modalBackdrop} onPress={handleClose} />
         <Animated.View
           style={[
-            styles.modalCard,
+            modalStyles.modalCard,
             {
               opacity: opacityAnimation,
               transform: [{ scale: scaleAnimation }],
             },
           ]}
         >
-          <TextInput
-            style={styles.titleInput}
-            value={formState.taskName}
-            onChangeText={(taskName) => setFormState((prev) => ({ ...prev, taskName }))}
-            placeholder="Task name"
-            placeholderTextColor={COLORS.OFF_WHITE}
+          <AddTaskTitleSection
+            ref={titleSectionRef}
+            onTaskNameReadyChange={setIsTaskNameReady}
           />
 
-          <TextInput
-            multiline
-            style={[styles.descriptionInput, { height: descriptionInputHeight }]}
-            value={formState.taskDesc}
-            onChangeText={(taskDesc) => {
-              setFormState((prev) => ({ ...prev, taskDesc }));
-              if (!taskDesc) {
-                setDescriptionInputHeight(MIN_DESCRIPTION_INPUT_HEIGHT);
-              }
-            }}
-            onContentSizeChange={(event) => {
-              const nextHeight = Math.max(
-                MIN_DESCRIPTION_INPUT_HEIGHT,
-                Math.min(event.nativeEvent.contentSize.height, MAX_DESCRIPTION_INPUT_HEIGHT),
-              );
-              setDescriptionInputHeight(nextHeight);
-            }}
-            placeholder="Description"
-            placeholderTextColor={COLORS.OFF_WHITE}
-            scrollEnabled={descriptionInputHeight >= MAX_DESCRIPTION_INPUT_HEIGHT}
-            textAlignVertical="top"
+          <AddTaskAttributesSection
+            ref={attributesSectionRef}
+            collaborators={collaborators}
+            labels={labels}
+            dispatchAddLabel={(label: TaskLabel) => dispatch({ type: AppStoreActionType.ADD_LABEL, payload: label })}
+            defaultPriority={defaultPriority}
           />
 
-          <View ref={chipsAnchorRef} style={styles.chipsAnchor}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-              <Pressable
-                ref={labelsChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'labels') { setActivePanel(null); return; }
-                  openSearchPanel('labels', labelsChipRef);
-                }}
-              >
-                <Ionicons name="pricetag-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedLabelsText && styles.chipTextPlaceholder]}>
-                  {selectedLabelsText ?? 'Labels'}
-                </Text>
-                {selectedLabelsText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, labels: [] }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
+          <AddTaskReminderSection ref={reminderSectionRef} />
+
+          <View style={modalStyles.bottomRow}>
+            <AddTaskProjectSection
+              ref={projectSectionRef}
+              projects={projects}
+            />
+
+            <View style={modalStyles.bottomActions}>
+              <Pressable style={[modalStyles.actionButton, modalStyles.actionButtonMuted]} onPress={handleCancel}>
+                <Text style={modalStyles.actionButtonMutedText}>Cancel</Text>
               </Pressable>
-
-              <Pressable
-                ref={priorityChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'priority') { setActivePanel(null); return; }
-                  openDropdownPanel('priority', priorityChipRef);
-                }}
-              >
-                <MaterialIcons name="outlined-flag" size={FONT_SIZES.MEDIUM} color={selectedPriorityText ? ((PRIORITY_OPTIONS.find((o) => o.value === formState.priority)?.iconColor)) : COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedPriorityText && styles.chipTextPlaceholder]}>
-                  {selectedPriorityText ?? 'Priority'}
-                </Text>
-                {selectedPriorityText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, priority: null }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
-              </Pressable>
-
-              <Pressable
-                ref={dateChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'startDate') { setActivePanel(null); return; }
-                  openDatePanel('startDate', dateChipRef);
-                }}
-              >
-                <MaterialIcons name="event" size={FONT_SIZES.MEDIUM} color={selectedDateText ? startDateColor : COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedDateText && styles.chipTextPlaceholder, selectedDateText ? { color: startDateColor } : null]}>
-                  {selectedDateText ?? 'Date'}
-                </Text>
-                {selectedDateText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, dates: { ...prev.dates, start: '' } }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
-              </Pressable>
-
-              <Pressable
-                ref={assigneeChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'assignee') { setActivePanel(null); return; }
-                  openSearchPanel('assignee', assigneeChipRef);
-                }}
-              >
-                <Ionicons name="person-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedAssigneeText && styles.chipTextPlaceholder]}>
-                  {selectedAssigneeText ?? 'Assignee'}
-                </Text>
-                {selectedAssigneeText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, assignee: null }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
-              </Pressable>
-
-              <Pressable
-                ref={deadlineChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'dueDate') { setActivePanel(null); return; }
-                  openDatePanel('dueDate', deadlineChipRef);
-                }}
-              >
-                <Ionicons name="alarm-outline" size={14} color={selectedDueDateText ? dueDateColor : COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedDueDateText && styles.chipTextPlaceholder, selectedDueDateText ? { color: dueDateColor } : null]}>
-                  {selectedDueDateText ?? 'Deadline'}
-                </Text>
-                {selectedDueDateText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, dates: { ...prev.dates, due: '' } }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
-              </Pressable>
-
-              <Pressable
-                ref={taskTypeChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'taskType') { setActivePanel(null); return; }
-                  openDropdownPanel('taskType', taskTypeChipRef);
-                }}
-              >
-                <Ionicons name="layers-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedTaskTypeText && styles.chipTextPlaceholder]}>
-                  {selectedTaskTypeText ?? 'Task type'}
-                </Text>
-                {selectedTaskTypeText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, taskType: null }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
-              </Pressable>
-
-              <Pressable
-                ref={reporterChipRef}
-                style={styles.chip}
-                onPress={() => {
-                  if (activePanel === 'reporter') { setActivePanel(null); return; }
-                  openSearchPanel('reporter', reporterChipRef);
-                }}
-              >
-                <Ionicons name="people-outline" size={14} color={COLORS.OFF_WHITE} />
-                <Text style={[styles.chipText, !selectedReporterText && styles.chipTextPlaceholder]}>
-                  {selectedReporterText ?? 'Reporter'}
-                </Text>
-                {selectedReporterText && (
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setFormState((prev) => ({ ...prev, reporter: null }));
-                      setActivePanel(null);
-                    }}
-                  >
-                    <Ionicons name="close-outline" size={14} color={COLORS.OFF_WHITE} />
-                  </Pressable>
-                )}
-              </Pressable>
-            </ScrollView>
-
-            {(activePanel === 'priority' || activePanel === 'taskType') && (() => {
-              const dropdownPanelConfig = {
-                priority: {
-                  label: 'Priority',
-                  options: PRIORITY_OPTIONS,
-                  value: formState.priority as string | number,
-                  onChange: (v: string | number) => setFormState((prev) => ({ ...prev, priority: v as PRIORITY })),
-                },
-                taskType: {
-                  label: 'Task type',
-                  options: TASK_TYPE_OPTIONS,
-                  value: formState.taskType as string | number,
-                  onChange: (v: string | number) => setFormState((prev) => ({ ...prev, taskType: v as TASK_TYPE })),
-                },
-              };
-              const config = dropdownPanelConfig[activePanel as 'priority' | 'taskType'];
-              return (
-                <View style={[styles.panelContainer, { left: dropdownPanelOffset.left, top: dropdownPanelOffset.top, minWidth: 200 }]}>
-                  <DropdownInput
-                    options={config.options}
-                    value={config.value}
-                    onChange={config.onChange}
-                    onRequestClose={() => setActivePanel(null)}
-                  />
-                </View>
-              );
-            })()}
-
-            {(activePanel === 'labels' || activePanel === 'assignee' || activePanel === 'reporter') && (() => {
-              const searchPanelConfig = {
-                labels: {
-                  placeholder: 'Search labels',
-                  options: labelOptions,
-                  value: formState.labels as string | string[] | null,
-                  isMultiSelect: true as const,
-                  onConfirm: (selected: string | number | (string | number)[]) => {
-                    const nextLabels = Array.isArray(selected) ? selected.map(String) : [String(selected)];
-                    setFormState((prev) => ({ ...prev, labels: nextLabels }));
-                    setActivePanel(null);
-                  },
-                  onRequestCreate: async (text: string) => {
-                    const created = await postRequest<TaskLabel>('create/label', { labelName: text });
-                    dispatch({ type: AppStoreActionType.ADD_LABEL, payload: created });
-                    setFormState((prev) => ({ ...prev, labels: [...prev.labels, created.labelName] }));
-                  },
-                  iconName: 'pricetag-outline' as const,
-                  iconColor: COLORS.OFF_WHITE,
-                },
-                assignee: {
-                  placeholder: 'Search assignee',
-                  options: collaboratorOptions,
-                  value: formState.assignee?.userId ?? null,
-                  isMultiSelect: false as const,
-                  onConfirm: (selected: string | number | (string | number)[]) => {
-                    const userId = Array.isArray(selected) ? selected[0] : selected;
-                    const assignee = collaborators.find((c) => c.userId === userId) ?? null;
-                    setFormState((prev) => ({ ...prev, assignee }));
-                    setActivePanel(null);
-                  },
-                  iconName: 'person-outline' as const,
-                  iconColor: COLORS.OFF_WHITE,
-                },
-                reporter: {
-                  placeholder: 'Search reporter',
-                  options: collaboratorOptions,
-                  value: formState.reporter?.userId ?? null,
-                  isMultiSelect: false as const,
-                  onConfirm: (selected: string | number | (string | number)[]) => {
-                    const userId = Array.isArray(selected) ? selected[0] : selected;
-                    const reporter = collaborators.find((c) => c.userId === userId) ?? null;
-                    setFormState((prev) => ({ ...prev, reporter }));
-                    setActivePanel(null);
-                  },
-                  iconName: 'person-outline' as const,
-                  iconColor: COLORS.OFF_WHITE,
-                },
-              };
-              const config = searchPanelConfig[activePanel as 'labels' | 'assignee' | 'reporter'];
-              return (
-                <View style={[styles.panelContainer, { left: searchPanelOffset.left, top: searchPanelOffset.top, minWidth: 200 }]}>
-                  <SearchDropdownInput
-                    options={config.options}
-                    value={config.value}
-                    onConfirm={config.onConfirm}
-                    onRequestClose={() => setActivePanel(null)}
-                    onRequestCreate={'onRequestCreate' in config ? config.onRequestCreate : undefined}
-                    placeholderText={config.placeholder}
-                    isMultiSelect={config.isMultiSelect}
-                    iconName={config.iconName}
-                    iconColor={config.iconColor}
-                  />
-                </View>
-              );
-            })()}
-
-            {(activePanel === 'startDate' || activePanel === 'dueDate') && (
-              <View style={[styles.panelContainer, { left: datePanelOffset.left, top: datePanelOffset.top, padding: 0, borderWidth: 0 }]}> 
-                <DatePicker
-                  selectedDate={activePanel === 'startDate' ? formState.dates.start : formState.dates.due}
-                  onChange={updateDateField}
-                  onRequestClose={() => setActivePanel(null)}
-                />
-              </View>
-            )}
-          </View>
-
-          <View style={styles.reminderRow}>
-            <Text style={styles.reminderLabel}>Reminders</Text>
-            <Pressable onPress={() => setIsReminderWindowOpen(true)}>
-              <Ionicons name="add-circle-outline" size={18} color={COLORS.RED_TOMATO} />
-            </Pressable>
-          </View>
-
-          {formState.reminders.map((reminder, index) => (
-            <Text key={`${reminder.date}-${reminder.time}-${index}`} style={styles.reminderSummary}>
-              {formatReminderSummary(reminder)}
-            </Text>
-          ))}
-
-          <View style={styles.bottomRow}>
-            <View style={styles.bottomLeftRow}>
-              <Text style={styles.breadcrumbHash}>#</Text>
-              <View style={styles.projectSelectorAnchor}>
-                <Pressable
-                  style={styles.projectSelector}
-                  onPress={() => setProjectDropdownOpen((prev) => !prev)}>
-                  <Text style={styles.projectSelectorText}>{selectedProjectName}</Text>
-                  <Ionicons name="chevron-down-outline" size={12} color={COLORS.OFF_WHITE} />
-                </Pressable>
-
-                {projectDropdownOpen && (
-                  <View style={styles.projectDropdown}>
-                    {projectDropdownOptions.map(({ project, depth }) => {
-                      const isSelected = formState.project?.projectId === project.projectId;
-                      const indentation = 12 + depth * 14;
-
-                      return (
-                      <Pressable
-                        key={project.projectId}
-                        style={[
-                          styles.projectDropdownItem,
-                          isSelected && styles.projectDropdownItemSelected,
-                          { paddingLeft: indentation },
-                        ]}
-                        onPress={() => {
-                          setFormState((prev) => ({ ...prev, project }));
-                          setProjectDropdownOpen(false);
-                        }}
-                      >
-                        <Text style={styles.projectDropdownItemText}>{project.projectname}</Text>
-                        {isSelected && (
-                          <Ionicons name="checkmark" size={14} color={COLORS.WHITE} />
-                        )}
-                      </Pressable>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            </View>
-
-            <View style={styles.bottomActions}>
-              <Pressable style={[styles.actionButton, styles.actionButtonMuted]} onPress={handleCancel}>
-                <Text style={styles.actionButtonMutedText}>Cancel</Text>
-              </Pressable>
-              <Pressable disabled={!formState.taskName} style={[styles.actionButton, styles.actionButtonPrimary, !formState.taskName && styles.actionButtonPrimaryDisabled]} onPress={handleAdd}>
-                <Text style={[styles.actionButtonPrimaryText,  !formState.taskName && styles.actionButtonPrimaryDisabledText]}>Add task</Text>
+              <Pressable disabled={!isTaskNameReady} style={[modalStyles.actionButton, modalStyles.actionButtonPrimary, !isTaskNameReady && modalStyles.actionButtonPrimaryDisabled]} onPress={handleAdd}>
+                <Text style={[modalStyles.actionButtonPrimaryText,  !isTaskNameReady && modalStyles.actionButtonPrimaryDisabledText]}>Add task</Text>
               </Pressable>
             </View>
           </View>
 
         </Animated.View>
       </View>
-
-      <Modal visible={isReminderWindowOpen} transparent animationType="fade" onRequestClose={() => setIsReminderWindowOpen(false)}>
-        <View style={styles.modalOverlay}>
-          <Pressable style={styles.modalBackdrop} onPress={() => setIsReminderWindowOpen(false)} />
-          <View style={styles.reminderModalCard}>
-            <Text style={styles.reminderTitle}>Reminders</Text>
-
-            <View style={styles.reminderTabs}>
-              <Pressable
-                style={[styles.reminderTab, reminderMode === 'dateTime' && styles.reminderTabActive]}
-                onPress={() => setReminderMode('dateTime')}
-              >
-                <Text style={styles.reminderTabText}>Date & time</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.reminderTab, reminderMode === 'beforeTask' && styles.reminderTabActive]}
-                onPress={() => setReminderMode('beforeTask')}
-              >
-                <Text style={styles.reminderTabText}>Before task</Text>
-              </Pressable>
-            </View>
-
-            {reminderMode === 'dateTime' && (
-              <>
-                <View style={styles.reminderTimeRow}>
-                  <Ionicons name="alarm-outline" size={14} color={COLORS.OFF_WHITE} />
-                  <TextInput
-                    style={styles.reminderTimeInput}
-                    value={reminderDraft.time}
-                    onChangeText={(time) => setReminderDraft((prev) => ({ ...prev, time }))}
-                  />
-                  <Text style={styles.reminderAvatar}>A</Text>
-                </View>
-
-                <Text style={styles.reminderHintText}>
-                  Set a notification for a specific time ("9am") or date and time ("Mon 18:00").
-                </Text>
-              </>
-            )}
-
-            {reminderMode === 'beforeTask' && (
-              <Text style={styles.reminderHintText}>Before task reminders are coming soon. Use Date & time for now.</Text>
-            )}
-
-            <View style={styles.reminderActions}>
-              <Pressable
-                style={[styles.actionButton, styles.actionButtonMuted]}
-                onPress={() => {
-                  setReminderDraft({ date: toIsoDate(new Date()), time: '21:00' });
-                  setIsReminderWindowOpen(false);
-                }}
-              >
-                <Text style={styles.actionButtonMutedText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.actionButton, styles.actionButtonPrimary]}
-                onPress={() => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    reminders: [...prev.reminders, reminderDraft],
-                  }));
-                  setReminderDraft({ date: toIsoDate(new Date()), time: '21:00' });
-                  setIsReminderWindowOpen(false);
-                }}
-              >
-                <Text style={styles.actionButtonPrimaryText}>Add reminder</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </Modal>
   );
 };
