@@ -1,12 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { BrowserRouter, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import Dashboard from './src/webos/components/dashboard/Dashboard';
 import { DashboardRoutes as AppRoutes } from './src/shared/interfaces/routes.interface';
 import { View } from 'react-native';
 import { APP_THEMES } from './src/shared/interfaces/app.interface';
-import { ThemeProvider } from './src/shared/context/ThemeContext';
+import { ThemeProvider, useTheme } from './src/shared/context/ThemeContext';
+import { AppStoreProvider } from './src/shared/context/AppStoreContext';
 import appStyles from './src/shared/styles/app.styles';
+
+const GLOBAL_FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
 const ROUTE_SEGMENT_MAP: Record<string, AppRoutes> = {
   search: AppRoutes.SEARCH,
@@ -14,6 +17,7 @@ const ROUTE_SEGMENT_MAP: Record<string, AppRoutes> = {
   today: AppRoutes.TODAY,
   upcoming: AppRoutes.UPCOMING,
   completed: AppRoutes.COMPLETED,
+  backlog: AppRoutes.BACKLOG,
   projects: AppRoutes.PROJECTS,
   settings: AppRoutes.SETTINGS,
 };
@@ -39,6 +43,17 @@ function DashboardRoute() {
 const APP_THEME = APP_THEMES.DARK;
 
 function ThemedApp() {
+  const { styles } = useTheme();
+
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.userSelect = 'none';
+      (document.body.style as any).webkitUserSelect = 'none';
+      document.documentElement.style.fontFamily = GLOBAL_FONT_FAMILY;
+      document.body.style.fontFamily = GLOBAL_FONT_FAMILY;
+    }
+  }, []);
+
   return (
     <View style={[appStyles[APP_THEME], { flex: 1 }]}>
       <BrowserRouter>
@@ -56,7 +71,9 @@ function ThemedApp() {
 export default function App() {
   return (
     <ThemeProvider theme={APP_THEME}>
-      <ThemedApp />
+      <AppStoreProvider>
+        <ThemedApp />
+      </AppStoreProvider>
     </ThemeProvider>
   );
 }

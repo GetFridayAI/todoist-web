@@ -1,23 +1,48 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { MENU_ITEMS } from '../../../interfaces/navigation.interface';
+import { MENU_ITEMS, NAVIGATION_PATHS } from '../../../interfaces/navigation.interface';
 import styles from '../../../styles/navigation.styles';
 import NavigationItem from './NavigationItem';
 import Projects from './Projects';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../../shared/styles/colors.styles';
-import { SPACING } from '../../../../shared/styles/spacing.styles';
+import { FONT_SIZES, SPACING } from '../../../../shared/styles/spacing.styles';
+import { useLabelsStore, useProjectsStore, useUsersStore } from '../../../../shared/context/AppStoreContext';
+import AddTask from '../../tasks/AddTask';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 
 interface NavigationBarProps {
-    isAddMenuOpen: boolean;
-    setIsAddMenuOpen: (open: boolean) => void;
+    isProjectsLoading?: boolean;
 }
 
-const NavigationBar: React.FC<NavigationBarProps> = ({ isAddMenuOpen, setIsAddMenuOpen }) => {
+const NavigationBar: React.FC<NavigationBarProps> = ({
+    isProjectsLoading = false,
+}) => {
+	const projects = useProjectsStore();
 	const menuItems = Object.values(MENU_ITEMS);
-	const [activeMenuItem, setActiveMenuItem] = React.useState<MENU_ITEMS>(MENU_ITEMS.Today);
+
+    const getActiveMenuItemFromPath = (): MENU_ITEMS => {
+        const currentPath = typeof window !== 'undefined' ? window?.location?.pathname ?? NAVIGATION_PATHS[MENU_ITEMS.Today] : NAVIGATION_PATHS[MENU_ITEMS.Today];
+        const matchedPath = Object.entries(NAVIGATION_PATHS).find(([_, path]) => path === currentPath);
+        return matchedPath ? (matchedPath[0] as MENU_ITEMS) : MENU_ITEMS.Today;
+    }
+
+	const [activeMenuItem, setActiveMenuItem] = React.useState<MENU_ITEMS>(getActiveMenuItemFromPath());
     const [isProfileHovered, setIsProfileHovered] = React.useState(false);
     const [isAddTaskHovered, setIsAddTaskHovered] = React.useState(false);
+    const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
+
+    const handleCancelAddTask = () => {
+        setIsAddTaskModalOpen(false);
+    };
+
+    const handleCloseAddTask = () => {
+        setIsAddTaskModalOpen(false);
+    };
+
+    const handleAddTask = () => {
+        setIsAddTaskModalOpen(false);
+    };
 
 	return (
 		<View style={styles.container}>
@@ -39,18 +64,10 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAddMenuOpen, setIsAddMe
             <Pressable 
                 style={[styles.addTaskContainer, isAddTaskHovered && styles.addTaskContainerHovered]}
                 onHoverIn={() => setIsAddTaskHovered(true)}
-                onHoverOut={() => {
-                    if (!isAddMenuOpen) {
-                        setIsAddTaskHovered(false);
-                    }
-                }}
-                onPress={() => setIsAddMenuOpen(!isAddMenuOpen)}>
-                <Ionicons 
-                    name='add' 
-                    color={COLORS.BLACK} 
-                    size={SPACING.LARGE}
-                    style={styles.addTaskIcon}></Ionicons>
-                <Text style={styles.addTaskTextButton}>Add</Text>
+                onHoverOut={() => {setIsAddTaskHovered(false);}}
+                onPress={() => setIsAddTaskModalOpen(true)}>
+                <MaterialIcons name="add-task" size={FONT_SIZES.EXTRA_LARGE} color={COLORS.RED_BLOOD} style={styles.addTaskIcon} />
+                <Text style={styles.addTaskTextButton}>Add Task</Text>
             </Pressable>
             
 
@@ -61,7 +78,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAddMenuOpen, setIsAddMe
                     isActive={item === activeMenuItem}
                     updateActiveTab={setActiveMenuItem} />
 			))}
-            <Projects />
+            
+            <Projects projects={projects} isLoading={isProjectsLoading} />
+
+            <AddTask
+                visible={isAddTaskModalOpen}
+                onClose={handleCloseAddTask}
+                onCancel={handleCancelAddTask}
+                defaultPriority={null}
+            />
 		</View>
 	);
 };

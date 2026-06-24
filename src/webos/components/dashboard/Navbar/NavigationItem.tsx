@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { useNavigate } from 'react-router-dom';
-import { MENU_ICONS, MENU_ITEMS } from '../../../interfaces/navigation.interface';
+import { MENU_ICONS, MENU_ITEMS, NAVIGATION_PATHS, NavigationIconName } from '../../../interfaces/navigation.interface';
 import styles from '../../../styles/navigation.styles';
-import { Ionicons } from '@expo/vector-icons';
 import { FONT_SIZES } from '../../../../shared/styles/spacing.styles';
 import { COLORS } from '../../../../shared/styles/colors.styles';
 
@@ -13,12 +12,24 @@ interface NavigationItemProps {
     updateActiveTab: (menuItem: MENU_ITEMS) => void;
 }
 
+const ICON_ASSETS: Record<NavigationIconName, number> = {
+	search: require('../../../../../assets/icons/search.svg'),
+	inbox: require('../../../../../assets/icons/inbox.svg'),
+	today: require('../../../../../assets/icons/today.svg'),
+	upcoming: require('../../../../../assets/icons/upcoming.svg'),
+	completed: require('../../../../../assets/icons/completed.svg'),
+	backlog: require('../../../../../assets/icons/backlog.svg'),
+};
+
 const NavigationItem: React.FC<NavigationItemProps> = ({ label, isActive = false, updateActiveTab }) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const navigate = useNavigate();
+	const iconName = MENU_ICONS[label];
+	const iconAsset = ICON_ASSETS[iconName];
+	const iconColor = isActive ? COLORS.RED_BLOOD : COLORS.WHITE;
 
 	const handlePress = () => {
-		navigate(`/dashboard/${label.toLowerCase()}`);
+		navigate(NAVIGATION_PATHS[label]);
         updateActiveTab(label);
 	};
 
@@ -29,7 +40,11 @@ const NavigationItem: React.FC<NavigationItemProps> = ({ label, isActive = false
 			onHoverOut={() => setIsHovered(false)}
 			style={[styles.itemContainer, isHovered && styles.itemContainerHover, isActive && styles.activeItemContainer]}
 		>
-            <Ionicons name={MENU_ICONS[label]} size={FONT_SIZES.LARGE} color={isActive ? COLORS.RED_BLOOD : COLORS.WHITE} />
+			<Image
+				source={iconAsset}
+				style={{ width: FONT_SIZES.LARGE, height: FONT_SIZES.LARGE, tintColor: iconColor }}
+				resizeMode="contain"
+			/>
 			<View>
 				<Text style={[styles.itemText, isActive ? styles.activeItemText : null]}>{label}</Text>
 			</View>

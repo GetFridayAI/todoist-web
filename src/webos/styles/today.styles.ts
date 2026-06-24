@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
     gap: SPACING.SMALL,
     marginBottom: SPACING.MEDIUM,
     borderRadius: SPACING.SMALL,
+    fontWeight: FONT_WEIGHT.LIGHT,
   },
   todaySummaryText: {
     fontSize: FONT_SIZES.SMALL,
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
     borderRadius: SPACING.SMALL,
   },
   priorityColumn: {
-    width: 260,
+    width: 270,
     borderWidth: 1,
     borderColor: COLORS.BLACK,
     borderRadius: SPACING.SMALL,
@@ -41,21 +42,23 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BLACK,
   },
   priorityColumnHeader: {
+    display: 'flex',
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'baseline',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.MEDIUM,
     paddingVertical: SPACING.MEDIUM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BLACK,
+    borderBottomColor: COLORS.BLACK
   },
   priorityColumnTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: FONT_SIZES.SMALL,
+    fontWeight: FONT_WEIGHT.SEMIBOLD,
+    width: 90,
+    marginRight: SPACING.EXTRA_SMALL,
   },
   priorityColumnCount: {
-    fontSize: FONT_SIZES.SMALL,
-    fontWeight: '600',
+    fontSize: FONT_SIZES.EXTRA_SMALL,
+    fontWeight: FONT_WEIGHT.SEMIBOLD,
     color: COLORS.GREY_LIGHT,
   },
   priorityColumnList: {
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.MEDIUM,
     paddingVertical: SPACING.MEDIUM,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.MEDIUM,
   },
   taskCard: {
     marginBottom: SPACING.SMALL,

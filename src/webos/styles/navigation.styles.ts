@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: COLORS.GREY_DARK,
     backgroundColor: COLORS.GREY_DARK,
-    paddingHorizontal: SPACING.MEDIUM,
+    paddingHorizontal: SPACING.EXTRA_SMALL,
     paddingVertical: SPACING.MEDIUM,
     gap: SPACING.EXTRA_SMALL,
   },
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     paddingHorizontal: SPACING.MEDIUM,
-    paddingVertical: SPACING.EXTRA_SMALL,
+    paddingVertical: SPACING.SMALL,
     borderRadius: SPACING.SMALL,
     display: 'flex',
     flexDirection: 'row',
@@ -68,11 +68,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.SMALL,
-    marginTop: SPACING.SMALL,
     marginBottom: SPACING.MEDIUM,
     color: COLORS.WHITE,
-    width: '60%',
-    padding: SPACING.EXTRA_SMALL,
+    width: '50%',
   },
   profileContainerHovered: {
     backgroundColor: COLORS.GREY,
@@ -98,7 +96,6 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.SMALL,
     paddingLeft: SPACING.MEDIUM,
     paddingRight: SPACING.MEDIUM,
-    marginBottom: SPACING.MEDIUM,
     width: '100%',
     borderRadius: SPACING.SMALL
   },
@@ -106,16 +103,25 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.GREY,
   },
   addTaskIcon: {
-    backgroundColor: COLORS.RED_BLOOD,
     width: SPACING.LARGE,
     height: SPACING.LARGE,
     borderRadius: SPACING.LARGE,
     justifyContent: 'center',
     alignItems: 'center',
     display: 'flex',
+    fontWeight: FONT_WEIGHT.BOLD,
   },
   addTaskTextButton: {
-    color: COLORS.RED_BLOOD
+    color: COLORS.RED_BLOOD,
+    fontWeight: FONT_WEIGHT.BOLD,
+  },
+  addMenuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
   },
   addMenuDropdown: {
     position: 'absolute',

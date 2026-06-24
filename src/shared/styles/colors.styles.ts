@@ -1,5 +1,6 @@
 export const COLORS = {
     BLACK: '#1f1f1f',
+    BLACK_BLUE: '#25272d',
     BLACK_PITCH: '#000000',
     WHITE: '#fff',
     OFF_WHITE: '#cccccc',
@@ -9,7 +10,10 @@ export const COLORS = {
     GREY_DARK: '#262626',
     GREY: '#322f2a',
     GREY_LIGHT: '#808080',
+    SLATE: '#636363',
     GREEN: '#7ec8ad',
     PURPLE: '#a970ff',
-    YELLOW: '#ff9913'
+    YELLOW: '#ff9913',
+    ORANGE: '#ff6f00',
+    SMOKE: '#31343c',
 }

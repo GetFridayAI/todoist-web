@@ -4,7 +4,8 @@ export const SPACING = {
     MEDIUM: 16,
     LARGE: 24,
     EXTRA_LARGE: 32,
-    HUGE: 40
+    HUGE: 36,
+    EXTRA_HUGE: 40
 } as const;
 
 export const FONT_SIZES = {

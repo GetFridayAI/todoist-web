@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BLACK,
     width: '100%',
     height: '100%',
-    color: COLORS.WHITE,
+    color: COLORS.WHITE
   },
 });
 
